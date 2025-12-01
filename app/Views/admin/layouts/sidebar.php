@@ -138,12 +138,30 @@
                         </a>
                     </li>
                     
-                    <li class="nav-item">
-                        <a href="<?= base_url('admin/settings') ?>"
-                           class="nav-link <?= (isset($active_menu) && $active_menu == 'settings') ? 'active' : '' ?>">
-                            <i class="nav-icon fas fa-cog"></i>
-                            <p>Pengaturan</p>
+                    <li class="nav-item has-treeview <?= (isset($active_menu) && in_array($active_menu, ['settings', 'qrcode_settings'])) ? 'menu-open' : '' ?>">
+                        <a href="#" class="nav-link <?= (isset($active_menu) && in_array($active_menu, ['settings', 'qrcode_settings'])) ? 'active' : '' ?>">
+                            <i class="nav-icon fas fa-cogs"></i>
+                            <p>
+                                Pengaturan
+                                <i class="right fas fa-angle-left"></i>
+                            </p>
                         </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a href="<?= base_url('admin/settings') ?>"
+                                   class="nav-link <?= (isset($active_menu) && $active_menu == 'settings') ? 'active' : '' ?>">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Aplikasi</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="<?= base_url('admin/qrcode/settings') ?>"
+                                   class="nav-link <?= (isset($active_menu) && $active_menu == 'qrcode_settings') ? 'active' : '' ?>">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>QR Code</p>
+                                </a>
+                            </li>
+                        </ul>
                     </li>
                 <?php endif; ?>
                 

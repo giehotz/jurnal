@@ -59,5 +59,17 @@ function guruRoutes(RouteCollection $routes)
         $routes->post('profile/update', 'Guru\Profile::update');
         $routes->get('profile/change-password', 'Guru\Profile::changePassword');
         $routes->post('profile/update-password', 'Guru\Profile::updatePassword');
+
+        // QR Code Management
+        $routes->get('qrcode', 'Guru\QRCode::index');
+        $routes->get('qrcode/create', 'Guru\QRCode::create');
+        $routes->post('qrcode/store', 'Guru\QRCode::store');
+        $routes->post('qrcode/preview', 'Guru\QRCode::preview');
+        $routes->get('qrcode/show/(:num)', 'Guru\QRCode::show/$1');
+        $routes->get('qrcode/edit/(:num)', 'Guru\QRCode::edit/$1');
+        $routes->post('qrcode/update/(:num)', 'Guru\QRCode::update/$1');
+        $routes->get('qrcode/download/(:num)', 'Guru\QRCode::download/$1');
+        $routes->get('qrcode/render/(:num)', 'Guru\QRCode::render/$1');
+        $routes->get('qrcode/delete/(:num)', 'Guru\QRCode::delete/$1');
     });
 }

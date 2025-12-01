@@ -61,6 +61,15 @@
                     </a>
                 </li>
 
+                <!-- QR Code -->
+                <li class="nav-item">
+                    <a href="<?= base_url('guru/qrcode') ?>"
+                       class="nav-link <?= ($active ?? '') === 'qrcode' ? 'active' : '' ?>">
+                        <i class="nav-icon fas fa-qrcode"></i>
+                        <p>QR Code</p>
+                    </a>
+                </li>
+
                 <!-- Profile -->
                 <li class="nav-item">
                     <a href="<?= base_url('guru/profile') ?>"

@@ -44,7 +44,7 @@ class AbsensiRepository
     {
         $builder = $this->db->table('absensi a')
             ->select('r.id as rombel_id, r.kode_rombel, r.nama_rombel, 
-                      m.nama_mapel, u.nama as nama_guru,
+                      m.nama_mapel, u.nama as nama_guru, a.tanggal,
                       COUNT(DISTINCT s.id) as jumlah_siswa,
                       SUM(CASE WHEN a.status = "hadir" THEN 1 ELSE 0 END) as hadir,
                       SUM(CASE WHEN a.status = "izin" THEN 1 ELSE 0 END) as izin,
@@ -89,7 +89,8 @@ class AbsensiRepository
                     ->groupEnd();
         }
 
-        $builder->groupBy('r.id, r.kode_rombel, r.nama_rombel, m.nama_mapel, u.nama')
+        $builder->groupBy('r.id, r.kode_rombel, r.nama_rombel, m.nama_mapel, u.nama, a.tanggal')
+            ->orderBy('a.tanggal', 'DESC')
             ->orderBy('r.kode_rombel', 'ASC')
             ->orderBy('m.nama_mapel', 'ASC');
 

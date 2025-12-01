@@ -35,11 +35,16 @@ class Dashboard extends BaseController
         $selectedYear = max(2000, min(2100, $selectedYear));
 
         // Hitung statistik jurnal (Tetap menggunakan bulan saat ini untuk stats card)
-        $totalJurnal = $jurnalModel->where('user_id', $userId)->countAllResults();
+        $totalJurnal = $jurnalModel->where('user_id', $userId)
+            ->where('mapel_id !=', 18)
+            ->notLike('materi', 'Absensi Kelas')
+            ->countAllResults();
         $jurnalBulanIni = $jurnalModel
             ->where('user_id', $userId)
             ->where('MONTH(tanggal)', date('m'))
             ->where('YEAR(tanggal)', date('Y'))
+            ->where('mapel_id !=', 18)
+            ->notLike('materi', 'Absensi Kelas')
             ->countAllResults();
             
         // Hitung jurnal minggu ini (7 hari terakhir)
@@ -49,15 +54,21 @@ class Dashboard extends BaseController
             ->where('user_id', $userId)
             ->where('tanggal >=', $startDate)
             ->where('tanggal <=', $endDate)
+            ->where('mapel_id !=', 18)
+            ->notLike('materi', 'Absensi Kelas')
             ->countAllResults();
             
         $jurnalPublished = $jurnalModel
             ->where('user_id', $userId)
             ->where('status', 'published')
+            ->where('mapel_id !=', 18)
+            ->notLike('materi', 'Absensi Kelas')
             ->countAllResults();
         $jurnalDraft = $jurnalModel
             ->where('user_id', $userId)
             ->where('status', 'draft')
+            ->where('mapel_id !=', 18)
+            ->notLike('materi', 'Absensi Kelas')
             ->countAllResults();
         
         // Hitung total kelas dan mapel yang diajar (memperbaiki error only_full_group_by)
@@ -65,14 +76,14 @@ class Dashboard extends BaseController
         $totalKelasResult = $jurnalModel->query("
             SELECT COUNT(DISTINCT rombel_id) as total 
             FROM jurnal_new 
-            WHERE user_id = ?
+            WHERE user_id = ? AND mapel_id != 18 AND materi NOT LIKE '%Absensi Kelas%'
         ", [$userId])->getRow();
         $totalKelas = $totalKelasResult->total ?? 0;
         
         $totalMapelResult = $jurnalModel->query("
             SELECT COUNT(DISTINCT mapel_id) as total 
             FROM jurnal_new 
-            WHERE user_id = ?
+            WHERE user_id = ? AND mapel_id != 18 AND materi NOT LIKE '%Absensi Kelas%'
         ", [$userId])->getRow();
         $totalMapel = $totalMapelResult->total ?? 0;
         
@@ -81,6 +92,8 @@ class Dashboard extends BaseController
             ->select('rombel.id as id, rombel.nama_rombel as nama_rombel, rombel.kode_rombel as kode_rombel')
             ->join('rombel', 'rombel.id = jurnal_new.rombel_id')
             ->where('jurnal_new.user_id', $userId)
+            ->where('jurnal_new.mapel_id !=', 18)
+            ->notLike('jurnal_new.materi', 'Absensi Kelas')
             ->groupBy('rombel.id, rombel.nama_rombel, rombel.kode_rombel')
             ->orderBy('rombel.nama_rombel', 'ASC')
             ->findAll();
@@ -95,6 +108,8 @@ class Dashboard extends BaseController
             ->select('mata_pelajaran.id as id, mata_pelajaran.nama_mapel as nama_mapel, mata_pelajaran.kode_mapel as kode_mapel')
             ->join('mata_pelajaran', 'mata_pelajaran.id = jurnal_new.mapel_id')
             ->where('jurnal_new.user_id', $userId)
+            ->where('jurnal_new.mapel_id !=', 18)
+            ->notLike('jurnal_new.materi', 'Absensi Kelas')
             ->groupBy('mata_pelajaran.id, mata_pelajaran.nama_mapel, mata_pelajaran.kode_mapel')
             ->orderBy('mata_pelajaran.nama_mapel', 'ASC')
             ->findAll();
@@ -118,6 +133,8 @@ class Dashboard extends BaseController
             ->where('user_id', $userId)
             ->where('MONTH(tanggal)', $selectedMonth)
             ->where('YEAR(tanggal)', $selectedYear)
+            ->where('mapel_id !=', 18)
+            ->notLike('materi', 'Absensi Kelas')
             ->findAll();
 
         // Inisialisasi array minggu
@@ -153,6 +170,8 @@ class Dashboard extends BaseController
             ->where('user_id', $userId)
             ->where('MONTH(tanggal)', $selectedMonth)
             ->where('YEAR(tanggal)', $selectedYear)
+            ->where('mapel_id !=', 18)
+            ->notLike('materi', 'Absensi Kelas')
             ->groupBy('DATE(tanggal)')
             ->findAll();
             

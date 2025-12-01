@@ -216,6 +216,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                     <thead>
                                         <tr>
                                             <th>No</th>
+                                            <th>Tanggal</th>
                                             <th>Kelas</th>
                                             <th>Mata Pelajaran</th>
                                             <th>Diisi Oleh</th>
@@ -232,6 +233,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                             <?php $no = 1; foreach ($rekapKelas as $kelas): ?>
                                                 <tr>
                                                     <td><?= $no++ ?></td>
+                                                    <td><?= date('d M Y', strtotime($kelas['tanggal'])) ?></td>
                                                     <td><?= esc($kelas['nama_rombel']) ?></td>
                                                     <td><?= esc($kelas['nama_mapel'] ?? '-') ?></td>
                                                     <td><?= esc($kelas['nama_guru'] ?? '-') ?></td>
@@ -251,7 +253,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                             <?php endforeach; ?>
                                         <?php else: ?>
                                             <tr>
-                                                <td colspan="10" class="text-center">Tidak ada data rekapitulasi</td>
+                                                <td colspan="11" class="text-center">Tidak ada data rekapitulasi</td>
                                             </tr>
                                         <?php endif; ?>
                                     </tbody>

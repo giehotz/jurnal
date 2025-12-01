@@ -132,6 +132,11 @@ function adminRoutes(RouteCollection $routes)
         $routes->post('settings/save', 'Admin\Settings::save');
         $routes->get('settings/maintenance', 'Admin\Settings::maintenance');
         $routes->post('settings/run-maintenance', 'Admin\Settings::runMaintenance');
+
+        // QR Code Settings
+        $routes->get('qrcode/settings', 'Admin\QRCodeSettings::index');
+        $routes->post('qrcode/settings/update', 'Admin\QRCodeSettings::update');
+        $routes->post('qrcode/settings/reset', 'Admin\QRCodeSettings::reset');
         
         // Siswa Management
         $routes->get('siswa', 'Admin\Siswa::index');
