@@ -33,4 +33,9 @@ class JurnalRepository
     {
         return $this->jurnalModel->update($id, $data);
     }
+
+    public function delete($id)
+    {
+        return $this->jurnalModel->delete($id);
+    }
 }

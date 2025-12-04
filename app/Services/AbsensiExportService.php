@@ -56,6 +56,7 @@ class AbsensiExportService
             $bulan = date('n', strtotime($row['tanggal']));
             $tahun = date('Y', strtotime($row['tanggal']));
             $bulanTahun = $bulan . '-' . $tahun;
+            $date = date('Y-m-d', strtotime($row['tanggal']));
             
             // Inisialisasi data bulan jika belum ada
             if (!isset($dataSiswa[$siswaId]['bulanan'][$bulanTahun])) {
@@ -67,9 +68,15 @@ class AbsensiExportService
                 ];
             }
             
-            // Akumulasi data berdasarkan status
-            $dataSiswa[$siswaId]['bulanan'][$bulanTahun][$row['status']] += 1;
-            $dataSiswa[$siswaId]['total'][$row['status']] += 1;
+            // Cek duplikasi harian per status
+            // Pastikan satu siswa hanya dihitung satu kali per status per hari
+            if (!isset($dataSiswa[$siswaId]['processed_daily'][$date][$row['status']])) {
+                $dataSiswa[$siswaId]['processed_daily'][$date][$row['status']] = true;
+                
+                // Akumulasi data berdasarkan status
+                $dataSiswa[$siswaId]['bulanan'][$bulanTahun][$row['status']] += 1;
+                $dataSiswa[$siswaId]['total'][$row['status']] += 1;
+            }
         }
 
         // Create Spreadsheet

@@ -77,22 +77,79 @@ class AbsensiInputController extends BaseController
             return redirect()->back()->withInput()->with('error', 'Anda tidak mengajar kelas ini');
         }
 
+        // Prevent saving if no students are listed (e.g. form submitted before loading)
+        if (empty($dto->absensiData)) {
+            return redirect()->back()->withInput()->with('error', 'Data siswa tidak ditemukan. Pastikan daftar siswa sudah dimuat sebelum menyimpan.');
+        }
+
+        // Check for existing Jurnal by same teacher, class, date, mapel, jam_ke
+        $existingJurnal = $this->db->table('jurnal_new')
+            ->where('user_id', $userId)
+            ->where('rombel_id', $dto->rombelId)
+            ->where('tanggal', $dto->tanggal)
+            ->where('mapel_id', $dto->mapelId)
+            ->where('jam_ke', $dto->jamKe)
+            ->get()
+            ->getRowArray();
+
         $this->db->transBegin();
 
         try {
-            // 1. Create Jurnal
-            $jurnalId = $this->jurnalRepo->insert([
-                'user_id' => $userId,
-                'rombel_id' => $dto->rombelId,
-                'mapel_id' => $dto->mapelId,
-                'tanggal' => $dto->tanggal,
-                'jam_ke' => $dto->jamKe,
-                'materi' => $dto->materi,
-                'created_at' => date('Y-m-d H:i:s')
-            ]);
+            if ($existingJurnal) {
+                // Update existing Jurnal
+                $jurnalId = $existingJurnal['id'];
+                $this->jurnalRepo->update($jurnalId, [
+                    'jumlah_jam' => $dto->jumlahJam,
+                    'materi' => $dto->materi,
+                    'updated_at' => date('Y-m-d H:i:s')
+                ]);
 
-            if (!$jurnalId) {
-                throw new \Exception('Gagal membuat jurnal');
+                // Delete old Absensi records for this Jurnal to replace with new ones
+                $this->db->table('absensi')->where('jurnal_id', $jurnalId)->delete();
+            } else {
+                // Check for overlapping hours with OTHER teachers or different sessions
+                $existingJurnals = $this->db->table('jurnal_new')
+                    ->where('rombel_id', $dto->rombelId)
+                    ->where('tanggal', $dto->tanggal)
+                    ->where('mapel_id !=', 18)
+                    ->get()
+                    ->getResultArray();
+
+                $usedHours = [];
+                foreach ($existingJurnals as $jurnal) {
+                    $start = (int)$jurnal['jam_ke'];
+                    $duration = (int)$jurnal['jumlah_jam'];
+                    for ($i = 0; $i < $duration; $i++) {
+                        $usedHours[] = $start + $i;
+                    }
+                }
+
+                $newStart = (int)$dto->jamKe;
+                $newDuration = (int)$dto->jumlahJam;
+                $newHours = [];
+                for ($i = 0; $i < $newDuration; $i++) {
+                    $newHours[] = $newStart + $i;
+                }
+
+                if (array_intersect($usedHours, $newHours)) {
+                    return redirect()->back()->withInput()->with('error', 'Jam mengajar bentrok dengan guru lain pada kelas ini.');
+                }
+
+                // Create New Jurnal
+                $jurnalId = $this->jurnalRepo->insert([
+                    'user_id' => $userId,
+                    'rombel_id' => $dto->rombelId,
+                    'mapel_id' => $dto->mapelId,
+                    'tanggal' => $dto->tanggal,
+                    'jam_ke' => $dto->jamKe,
+                    'jumlah_jam' => $dto->jumlahJam,
+                    'materi' => $dto->materi,
+                    'created_at' => date('Y-m-d H:i:s')
+                ]);
+
+                if (!$jurnalId) {
+                    throw new \Exception('Gagal membuat jurnal');
+                }
             }
 
             // 2. Insert Absensi linked to Jurnal
@@ -198,6 +255,44 @@ class AbsensiInputController extends BaseController
             return redirect()->to('/guru/absensi')->with('success', 'Data absensi berhasil diupdate.');
         } else {
             return redirect()->back()->withInput()->with('error', 'Gagal mengupdate data absensi.');
+        }
+    }
+
+    public function delete($jurnalId)
+    {
+        if (!$this->authService->checkGuruAccess()) {
+            return redirect()->to('/auth/login');
+        }
+
+        $userId = $this->authService->getUserId();
+        
+        // 1. Verify ownership
+        $jurnal = $this->jurnalRepo->find($jurnalId);
+        if (!$jurnal || $jurnal['user_id'] != $userId) {
+            return redirect()->back()->with('error', 'Anda tidak memiliki akses untuk menghapus data ini.');
+        }
+
+        $db = \Config\Database::connect();
+        $db->transStart();
+
+        try {
+            // 2. Delete Absensi records first (Child)
+            // Use query builder directly since repository might not have deleteByJurnalId
+            $db->table('absensi')->where('jurnal_id', $jurnalId)->delete();
+
+            // 3. Delete Jurnal record (Parent)
+            $this->jurnalRepo->delete($jurnalId);
+
+            $db->transComplete();
+
+            if ($db->transStatus() === false) {
+                return redirect()->back()->with('error', 'Gagal menghapus data absensi.');
+            }
+
+            return redirect()->to('/guru/absensi')->with('success', 'Data absensi berhasil dihapus.');
+        } catch (\Exception $e) {
+            $db->transRollback();
+            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
 }

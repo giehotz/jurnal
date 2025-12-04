@@ -120,8 +120,15 @@
                     </div>
                 </div>
                 
-                <div class="flex justify-end pt-2">
-                    <a href="<?= base_url('guru/absensi/detail/' . $kelas['rombel_id'] . '?start_date=' . $startDate . '&end_date=' . $endDate) ?>" 
+                <div class="flex justify-end pt-2 gap-2">
+                    <?php if (!empty($kelas['jurnal_id'])): ?>
+                        <a href="<?= base_url('guru/absensi/delete/' . $kelas['jurnal_id']) ?>" 
+                           class="inline-flex items-center justify-center px-4 py-2 text-xs font-medium text-red-600 bg-red-50 border border-red-100 rounded-lg hover:bg-red-100 focus:ring-2 focus:ring-red-300 transition-colors"
+                           onclick="return confirm('Apakah Anda yakin ingin menghapus data absensi ini? Data jurnal terkait juga akan dihapus.')">
+                            <i class="fas fa-trash mr-1.5"></i> Hapus
+                        </a>
+                    <?php endif; ?>
+                    <a href="<?= base_url('guru/absensi/detail/' . $kelas['rombel_id'] . '?start_date=' . date('Y-m-d', strtotime($kelas['tanggal'])) . '&end_date=' . date('Y-m-d', strtotime($kelas['tanggal']))) ?>" 
                        class="inline-flex items-center justify-center px-4 py-2 text-xs font-medium text-blue-600 bg-blue-50 border border-blue-100 rounded-lg hover:bg-blue-100 focus:ring-2 focus:ring-blue-300 transition-colors">
                         Detail <i class="fas fa-arrow-right ml-1.5"></i>
                     </a>

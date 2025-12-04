@@ -243,11 +243,27 @@ document.addEventListener('DOMContentLoaded', function() {
                                                     <td><?= esc($kelas['sakit']) ?></td>
                                                     <td><?= esc($kelas['alfa']) ?></td>
                                                     <td>
-                                                        <a href="<?= base_url('guru/absensi/detail/' . $kelas['rombel_id'] . '?start_date=' . $startDate . '&end_date=' . $endDate) ?>" 
-                                                           class="btn btn-info btn-sm" 
-                                                           title="Detail">
-                                                            <i class="fas fa-eye"></i> Detail
-                                                        </a>
+                                                        <?php if (!empty($kelas['rombel_id'])): ?>
+                                                            <div class="btn-group">
+                                                                <a href="<?= base_url('guru/absensi/detail/' . $kelas['rombel_id'] . '?start_date=' . date('Y-m-d', strtotime($kelas['tanggal'])) . '&end_date=' . date('Y-m-d', strtotime($kelas['tanggal']))) ?>" 
+                                                                   class="btn btn-info btn-sm" 
+                                                                   title="Detail">
+                                                                    <i class="fas fa-eye"></i> Detail
+                                                                </a>
+                                                                <?php if (!empty($kelas['jurnal_id'])): ?>
+                                                                    <a href="<?= base_url('guru/absensi/delete/' . $kelas['jurnal_id']) ?>" 
+                                                                       class="btn btn-danger btn-sm" 
+                                                                       title="Hapus"
+                                                                       onclick="return confirm('Apakah Anda yakin ingin menghapus data absensi ini? Data jurnal terkait juga akan dihapus.')">
+                                                                        <i class="fas fa-trash"></i> Hapus
+                                                                    </a>
+                                                                <?php endif; ?>
+                                                            </div>
+                                                        <?php else: ?>
+                                                            <button class="btn btn-secondary btn-sm" disabled title="Tidak ada data">
+                                                                <i class="fas fa-eye-slash"></i>
+                                                            </button>
+                                                        <?php endif; ?>
                                                     </td>
                                                 </tr>
                                             <?php endforeach; ?>

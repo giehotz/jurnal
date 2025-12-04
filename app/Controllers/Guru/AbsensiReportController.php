@@ -41,12 +41,21 @@ class AbsensiReportController extends BaseController
         }
 
         $userId = $this->authService->getUserId();
-        $startDate = $this->request->getGet('start_date') ?: date('Y-m-01');
-        $endDate = $this->request->getGet('end_date') ?: date('Y-m-t');
+        
+        // Default to last 6 days if not specified
+        if (!$this->request->getGet('start_date')) {
+            $endDate = date('Y-m-d');
+            $startDate = date('Y-m-d', strtotime('-5 days')); // 6 days including today
+        } else {
+            $startDate = $this->request->getGet('start_date');
+            $endDate = $this->request->getGet('end_date') ?: date('Y-m-t');
+        }
+        
         $rombelId = $this->request->getGet('rombel_id');
 
-        // Jika rombel_id kosong, cek apakah guru adalah wali kelas
-        if (empty($rombelId)) {
+        // Jika rombel_id tidak ada di URL (null), cek apakah guru adalah wali kelas
+        // Jika rombel_id ada tapi kosong string (''), berarti user memilih "Semua Kelas"
+        if ($rombelId === null) {
             $kelasWali = $this->rombelRepo->getKelasWali($userId);
             if ($kelasWali) {
                 $rombelId = $kelasWali['id'];
@@ -55,6 +64,50 @@ class AbsensiReportController extends BaseController
 
         $kelasGuru = $this->rombelRepo->getKelasGuru($userId);
         $rekapKelas = $this->absensiRepo->getRekapKelasGuru($startDate, $endDate, $rombelId, $userId);
+        
+        // Fill missing dates for the last 6 days view (or selected range)
+        $filledRekap = [];
+        $currentDate = $endDate;
+        $existingDates = array_column($rekapKelas, 'tanggal');
+        
+        // Map existing data by date for easy lookup
+        $rekapByDate = [];
+        foreach ($rekapKelas as $item) {
+            $date = date('Y-m-d', strtotime($item['tanggal']));
+            if (!isset($rekapByDate[$date])) {
+                $rekapByDate[$date] = [];
+            }
+            $rekapByDate[$date][] = $item;
+        }
+
+        // Iterate from end date to start date to maintain DESC order
+        while ($currentDate >= $startDate) {
+            if (isset($rekapByDate[$currentDate])) {
+                // If data exists for this date, add all rows
+                foreach ($rekapByDate[$currentDate] as $item) {
+                    $filledRekap[] = $item;
+                }
+            } else {
+                // If no data, add a placeholder row
+                $filledRekap[] = [
+                    'tanggal' => $currentDate,
+                    'nama_rombel' => '-',
+                    'nama_mapel' => '-',
+                    'nama_guru' => '-',
+                    'jumlah_siswa' => '-',
+                    'hadir' => '-',
+                    'izin' => '-',
+                    'sakit' => '-',
+                    'alfa' => '-',
+                    'rombel_id' => $rombelId, // Pass rombelId if selected, else null
+                    'jurnal_id' => null
+                ];
+            }
+            $currentDate = date('Y-m-d', strtotime($currentDate . ' -1 day'));
+        }
+        
+        $rekapKelas = $filledRekap;
+        
         $rekapHarian = $this->absensiRepo->getRekapHarianGuru($startDate, $endDate, $rombelId, $userId);
 
         // Format rekap harian for chart

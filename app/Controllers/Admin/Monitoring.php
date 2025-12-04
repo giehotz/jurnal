@@ -67,9 +67,10 @@ class Monitoring extends BaseController
             ->countAllResults();
 
         $totalAbsensi = $this->db->table('absensi')
+            ->select('COUNT(DISTINCT CONCAT(rombel_id, "-", tanggal)) as total')
             ->where('tanggal >=', $startDate)
             ->where('tanggal <=', $endDate)
-            ->countAllResults();
+            ->get()->getRow()->total;
             
         // Calculate Attendance Rate (Directly from absensi table)
         $attendanceStats = $this->db->table('absensi')

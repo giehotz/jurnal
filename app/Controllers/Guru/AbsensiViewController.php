@@ -20,6 +20,7 @@ class AbsensiViewController extends BaseController
     protected $rombelRepo;
     protected $mapelRepo;
     protected $siswaRepo;
+    protected $hariLiburService;
 
     public function __construct()
     {
@@ -29,6 +30,7 @@ class AbsensiViewController extends BaseController
         $this->rombelRepo = new RombelRepository();
         $this->mapelRepo = new MataPelajaranRepository();
         $this->siswaRepo = new SiswaRepository();
+        $this->hariLiburService = new \App\Services\HariLiburService();
     }
 
     public function view($id)
@@ -85,8 +87,13 @@ class AbsensiViewController extends BaseController
             return redirect()->to('/auth/login');
         }
 
-        $startDate = $this->request->getGet('start_date') ?? date('Y-m-d');
-        $endDate = $this->request->getGet('end_date') ?? date('Y-m-d');
+        // Ambil filter tanggal, default ke hari ini jika tidak ada
+        $filterDate = $this->request->getGet('filter_date');
+        
+        // Jika tidak ada filter_date, cek start_date (legacy support) atau default today
+        if (!$filterDate) {
+            $filterDate = $this->request->getGet('start_date') ?? date('Y-m-d');
+        }
 
         $rombel = $this->rombelRepo->find($rombelId);
         if (!$rombel) {
@@ -94,16 +101,33 @@ class AbsensiViewController extends BaseController
         }
 
         $userId = $this->authService->getUserId();
+        
+        // Cek Hari Libur
+        $isHoliday = false;
+        $holidayName = '';
+        
+        // Gunakan getDetailHariLibur untuk cek range 1 hari
+        $liburData = $this->hariLiburService->getDetailHariLibur($filterDate, $filterDate);
+        if (!empty($liburData)) {
+            $isHoliday = true;
+            $holidayName = $liburData[0]['holiday_name'];
+        }
+
         // Use Repository instead of legacy service
-        $detailAbsensi = $this->absensiRepo->getDetailAbsensiPerKelas($rombelId, $startDate, $endDate, $userId);
+        // Kita filter per hari sesuai request user
+        $detailAbsensi = $this->absensiRepo->getDetailAbsensiPerKelas($rombelId, $filterDate, $filterDate, $userId);
 
         $data = [
             'title' => 'Detail Absensi Kelas ' . $rombel['nama_rombel'],
             'active' => 'absensi',
             'rombel' => $rombel,
             'detailAbsensi' => $detailAbsensi,
-            'startDate' => $startDate,
-            'endDate' => $endDate
+            'filterDate' => $filterDate,
+            'isHoliday' => $isHoliday,
+            'holidayName' => $holidayName,
+            // Keep start/end for back button compatibility if needed, but UI will focus on filterDate
+            'startDate' => $filterDate, 
+            'endDate' => $filterDate
         ];
 
         $viewPath = MobileDetection::isMobile() ? 'mobile/guru/absensi/detail' : 'guru/absensi/detail';

@@ -8,6 +8,7 @@ class AbsensiDTO
     public $rombelId;
     public $mapelId;
     public $jamKe;
+    public $jumlahJam;
     public $materi;
     public $absensiData; // Array of siswa_id => [status, keterangan]
 
@@ -17,6 +18,7 @@ class AbsensiDTO
         $this->rombelId = $data['rombel_id'] ?? null;
         $this->mapelId = $data['mapel_id'] ?? null;
         $this->jamKe = $data['jam_ke'] ?? null;
+        $this->jumlahJam = $data['jumlah_jam'] ?? null;
         $this->materi = $data['materi'] ?? null;
         $this->absensiData = $data['absensi'] ?? [];
     }

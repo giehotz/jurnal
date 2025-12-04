@@ -177,6 +177,14 @@
                         </div>
                         <span class="text-[10px] text-center font-medium text-gray-600 leading-tight">Profil</span>
                     </a>
+
+                    <!-- 4. QR Code -->
+                    <a href="<?= base_url('guru/qrcode') ?>" class="flex flex-col items-center gap-2 group">
+                        <div class="w-12 h-12 rounded-2xl bg-icon-purple text-white flex items-center justify-center text-lg shadow-lg shadow-purple-100 transform transition group-hover:scale-105 group-active:scale-95">
+                            <i class="fas fa-qrcode"></i>
+                        </div>
+                        <span class="text-[10px] text-center font-medium text-gray-600 leading-tight">QR Code</span>
+                    </a>
                 </div>
             </div>
 
@@ -254,17 +262,39 @@
                                     
                                     <?php foreach ($daysInWeek as $day): ?>
                                         <?php 
-                                        $hasJournal = isset($jurnal_by_date[$day['date_sql']]);
-                                        $isToday = ($day['date_sql'] === $today);
-                                        $journalCount = $hasJournal ? $jurnal_by_date[$day['date_sql']] : 0;
+                                        $dateSql = $day['date_sql'];
+                                        $hasJournal = isset($jurnal_by_date[$dateSql]);
+                                        $isToday = ($dateSql === $today);
+                                        $journalCount = $hasJournal ? $jurnal_by_date[$dateSql] : 0;
+                                        
+                                        // Cek Libur & Minggu
+                                        $isHoliday = isset($holidays[$dateSql]);
+                                        $holidayName = $isHoliday ? $holidays[$dateSql] : '';
+                                        $isSunday = (date('N', strtotime($dateSql)) == 7);
                                         
                                         $dayClass = 'w-9 h-9 flex flex-col items-center justify-center rounded-full text-[11px] relative transition';
-                                        if ($isToday) $dayClass .= ' bg-green-100 text-green-700 font-bold';
-                                        if ($hasJournal && !$isToday) $dayClass .= ' font-bold text-blue-600';
-                                        if (!$hasJournal && !$isToday) $dayClass .= ' text-gray-600';
+                                        
+                                        // Styling Logic
+                                        if ($isToday) {
+                                            $dayClass .= ' bg-green-100 text-green-700 font-bold';
+                                        } elseif ($hasJournal) {
+                                            $dayClass .= ' font-bold text-blue-600';
+                                        } elseif ($isHoliday || $isSunday) {
+                                            $dayClass .= ' text-red-500 font-medium';
+                                        } else {
+                                            $dayClass .= ' text-gray-600';
+                                        }
+                                        
+                                        // Tooltip
+                                        $tooltipParts = [];
+                                        if ($isToday) $tooltipParts[] = 'Hari Ini';
+                                        if ($isHoliday) $tooltipParts[] = $holidayName;
+                                        if ($hasJournal) $tooltipParts[] = $journalCount . ' Jurnal';
+                                        $tooltip = implode(', ', $tooltipParts);
+                                        if (empty($tooltip)) $tooltip = date('d M Y', strtotime($dateSql));
                                         ?>
                                         <div class="flex justify-center">
-                                            <div class="<?= $dayClass ?>" title="<?= $journalCount ?> Jurnal">
+                                            <div class="<?= $dayClass ?>" title="<?= esc($tooltip) ?>">
                                                 <span><?= $day['day_num'] ?></span>
                                                 <?php if ($hasJournal): ?>
                                                     <span class="absolute bottom-1 w-1 h-1 bg-blue-600 rounded-full <?= $isToday ? 'bg-green-600' : '' ?>"></span>
@@ -287,7 +317,7 @@
                     </div>
                     
                     <!-- Legend -->
-                    <div class="mt-4 pt-3 border-t border-gray-100 flex gap-4 text-[10px]">
+                    <div class="mt-4 pt-3 border-t border-gray-100 flex gap-4 text-[10px] flex-wrap">
                         <div class="flex items-center gap-1.5">
                             <span class="w-2 h-2 rounded-full bg-blue-600"></span>
                             <span class="text-gray-600">Ada Jurnal</span>
@@ -296,6 +326,10 @@
                             <span class="w-2 h-2 rounded-full bg-green-600"></span>
                             <span class="text-gray-600">Hari Ini</span>
                         </div>
+                        <!-- <div class="flex items-center gap-1.5">
+                            <span class="text-red-500 font-bold text-xs">12</span>
+                            <span class="text-gray-600">Libur</span>
+                        </div> -->
                     </div>
                 </div>
             </div>

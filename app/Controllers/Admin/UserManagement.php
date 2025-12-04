@@ -24,15 +24,15 @@ class UserManagement extends BaseController
         if (!session()->get('logged_in') || ($role !== 'admin' && $role !== 'super_admin')) {
             return redirect()->to('/auth/login');
         }
-        
+
         // Ambil data user dari database
         $data = [
             'users' => $this->userModel->getUsers()
         ];
-        
+
         return view('admin/users/list', $data);
     }
-    
+
     public function exportToPdf()
     {
         // Cek jika user sudah login dan memiliki role admin/super_admin
@@ -40,40 +40,40 @@ class UserManagement extends BaseController
         if (!session()->get('logged_in') || ($role !== 'admin' && $role !== 'super_admin')) {
             return redirect()->to('/auth/login');
         }
-        
+
         // Ambil data user dari database
         $users = $this->userModel->getUsers();
-        
+
         // Load library DOMPDF
         $options = new \Dompdf\Options();
         $options->set('isRemoteEnabled', true);
         $dompdf = new \Dompdf\Dompdf($options);
-        
+
         // Data untuk ditampilkan di PDF
         $data = [
             'users' => $users
         ];
-        
+
         // Render view ke HTML
         $html = view('admin/users/pdf', $data);
-        
+
         // Load HTML ke DOMPDF
         $dompdf->loadHtml($html);
-        
+
         // Setup ukuran kertas dan orientasi
         $dompdf->setPaper('A4', 'portrait');
-        
+
         // Render PDF
         $dompdf->render();
-        
+
         // Output PDF ke browser
         $dompdf->stream('daftar_pengguna.pdf', [
             'Attachment' => false // Tampilkan di browser, bukan download otomatis
         ]);
-        
+
         exit();
     }
-    
+
     public function create()
     {
         // Cek jika user sudah login dan memiliki role admin/super_admin
@@ -81,10 +81,10 @@ class UserManagement extends BaseController
         if (!session()->get('logged_in') || ($role !== 'admin' && $role !== 'super_admin')) {
             return redirect()->to('/auth/login');
         }
-        
+
         return view('admin/users/create');
     }
-    
+
     public function store()
     {
         // Cek jika user sudah login dan memiliki role admin/super_admin
@@ -92,7 +92,7 @@ class UserManagement extends BaseController
         if (!session()->get('logged_in') || ($role !== 'admin' && $role !== 'super_admin')) {
             return redirect()->to('/auth/login');
         }
-        
+
         // Validasi input
         $rules = [
             'nama' => 'required|min_length[3]',
@@ -100,11 +100,11 @@ class UserManagement extends BaseController
             'password' => 'required|min_length[8]',
             'role' => 'required|in_list[guru,admin]'
         ];
-        
+
         if (!$this->validate($rules)) {
             return $this->create();
         }
-        
+
         // Simpan data user
         $userData = [
             'nip' => $this->request->getPost('nip'),
@@ -114,13 +114,13 @@ class UserManagement extends BaseController
             'role' => $this->request->getPost('role'),
             'is_active' => 1
         ];
-        
+
         $this->userModel->save($userData);
-        
+
         session()->setFlashdata('success', 'User berhasil ditambahkan!');
         return redirect()->to('/admin/users');
     }
-    
+
     public function edit($id)
     {
         // Cek jika user sudah login dan memiliki role admin/super_admin
@@ -128,15 +128,15 @@ class UserManagement extends BaseController
         if (!session()->get('logged_in') || ($role !== 'admin' && $role !== 'super_admin')) {
             return redirect()->to('/auth/login');
         }
-        
+
         // Ambil data user dari database
         $data = [
             'user' => $this->userModel->getUserById($id)
         ];
-        
+
         return view('admin/users/edit', $data);
     }
-    
+
     public function update($id)
     {
         // Cek jika user sudah login dan memiliki role admin/super_admin
@@ -144,18 +144,18 @@ class UserManagement extends BaseController
         if (!session()->get('logged_in') || ($role !== 'admin' && $role !== 'super_admin')) {
             return redirect()->to('/auth/login');
         }
-        
+
         // Validasi input
         $rules = [
             'nama' => 'required|min_length[3]',
             'email' => 'required|valid_email',
             'role' => 'required|in_list[guru,admin]'
         ];
-        
+
         if (!$this->validate($rules)) {
             return $this->edit($id);
         }
-        
+
         // Update data user
         $userData = [
             'nip' => $this->request->getPost('nip'),
@@ -164,13 +164,13 @@ class UserManagement extends BaseController
             'role' => $this->request->getPost('role'),
             'is_active' => $this->request->getPost('is_active') ? 1 : 0
         ];
-        
+
         $this->userModel->update($id, $userData);
-        
+
         session()->setFlashdata('success', 'User berhasil diperbarui!');
         return redirect()->to('/admin/users');
     }
-    
+
     public function delete($id)
     {
         // Cek jika user sudah login dan memiliki role admin/super_admin
@@ -178,14 +178,31 @@ class UserManagement extends BaseController
         if (!session()->get('logged_in') || ($role !== 'admin' && $role !== 'super_admin')) {
             return redirect()->to('/auth/login');
         }
-        
-        // Hapus user
-        $this->userModel->delete($id);
-        
-        session()->setFlashdata('success', 'User berhasil dihapus!');
+
+        // Cek apakah user mencoba menghapus akun sendiri
+        if ($id == session()->get('id')) {
+            session()->setFlashdata('error', 'Anda tidak dapat menghapus akun Anda sendiri!');
+            return redirect()->to('/admin/users');
+        }
+
+        // Hapus user dengan error handling
+        try {
+            $this->userModel->delete($id);
+            session()->setFlashdata('success', 'User berhasil dihapus!');
+        } catch (\CodeIgniter\Database\Exceptions\DatabaseException $e) {
+            // Cek error foreign key constraint (1451)
+            if ($e->getCode() == 1451) {
+                session()->setFlashdata('error', 'User tidak dapat dihapus karena masih memiliki data terkait (Jurnal, Absensi, dll). Silahkan nonaktifkan user ini sebagai alternatif.');
+            } else {
+                session()->setFlashdata('error', 'Gagal menghapus user: ' . $e->getMessage());
+            }
+        } catch (\Exception $e) {
+            session()->setFlashdata('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+
         return redirect()->to('/admin/users');
     }
-    
+
     public function resetPassword($id)
     {
         // Cek jika user sudah login dan memiliki role admin/super_admin
@@ -193,14 +210,14 @@ class UserManagement extends BaseController
         if (!session()->get('logged_in') || ($role !== 'admin' && $role !== 'super_admin')) {
             return redirect()->to('/auth/login');
         }
-        
+
         // Reset password user (set password default: 12345678)
         $userData = [
             'password' => password_hash('12345678', PASSWORD_DEFAULT)
         ];
-        
+
         $this->userModel->update($id, $userData);
-        
+
         session()->setFlashdata('success', 'Password user berhasil direset!');
         return redirect()->to('/admin/users');
     }
@@ -327,11 +344,11 @@ class UserManagement extends BaseController
             if (!empty($duplicateNIPs)) {
                 $warnings[] = "<strong>NIP Duplikat (dilewati):</strong><br>" . implode('<br>', $duplicateNIPs);
             }
-            
+
             if (!empty($duplicateEmails)) {
                 $warnings[] = "<strong>Email Duplikat (dilewati):</strong><br>" . implode('<br>', $duplicateEmails);
             }
-            
+
             if (!empty($errors)) {
                 $warnings[] = "<strong>Error Lainnya:</strong><br>" . implode('<br>', $errors);
             }
@@ -340,7 +357,7 @@ class UserManagement extends BaseController
             if (!empty($message)) {
                 session()->setFlashdata('success', $message);
             }
-            
+
             if (!empty($warnings)) {
                 session()->setFlashdata('warning', implode('<br><br>', $warnings));
             }

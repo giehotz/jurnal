@@ -104,4 +104,29 @@ class QRCodeSettings extends BaseController
             return redirect()->to('/admin/qrcode/settings')->with('error', 'Gagal mereset pengaturan.');
         }
     }
+
+    public function deleteLogo()
+    {
+        if (!session()->get('logged_in') || (session()->get('role') !== 'admin' && session()->get('role') !== 'super_admin')) {
+            return redirect()->to('/auth/login');
+        }
+
+        $settings = $this->qrSettingsModel->getActiveSettings();
+        $id = $settings['id'];
+
+        if (!empty($settings['default_logo_path'])) {
+            $filePath = ROOTPATH . 'public/' . $settings['default_logo_path'];
+            if (file_exists($filePath)) {
+                unlink($filePath);
+            }
+
+            if ($this->qrSettingsModel->update($id, ['default_logo_path' => null])) {
+                return redirect()->to('/admin/qrcode/settings')->with('success', 'Logo default berhasil dihapus.');
+            } else {
+                return redirect()->to('/admin/qrcode/settings')->with('error', 'Gagal menghapus logo dari database.');
+            }
+        }
+
+        return redirect()->to('/admin/qrcode/settings')->with('error', 'Tidak ada logo untuk dihapus.');
+    }
 }

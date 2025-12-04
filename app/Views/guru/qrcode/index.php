@@ -34,7 +34,7 @@
                     <div class="card shadow h-100 py-2" style="border-radius: 15px;">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-start mb-3">
-                                <h1 class="display-4 font-weight-bold text-dark ml-2" style="font-family: serif; line-height: 1;"><?= $i + 1 ?></h1>
+                                <h1 class="btn btn-primary  display-4 font-weight-bold text-white ml-2" style="font-family: 'Poppins', sans-serif; line-height: 1; "><?= $i + 1 ?></h1>
                                 <div class="text-right small text-muted" style="font-size: 0.8rem;">
                                     <div>Dibuat Pada : <?= date('d M Y H:i', strtotime($url['created_at'])) ?></div>
                                     <div>Slug : <?= esc($url['short_slug']) ?></div>

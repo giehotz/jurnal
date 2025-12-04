@@ -38,7 +38,7 @@ class Ruangan extends BaseController
     public function store()
     {
         if (!$this->validate([
-            'nama_ruangan' => 'required|min_length[3]|max_length[100]',
+            'nama_ruangan' => 'required|min_length[3]|max_length[100]|is_unique[ruangan.nama_ruangan]',
             'kapasitas' => 'required|integer|greater_than[0]',
             'jenis' => 'required'
         ])) {
@@ -77,7 +77,7 @@ class Ruangan extends BaseController
     public function update($id)
     {
         if (!$this->validate([
-            'nama_ruangan' => 'required|min_length[3]|max_length[100]',
+            'nama_ruangan' => 'required|min_length[3]|max_length[100]|is_unique[ruangan.nama_ruangan,id,' . $id . ']',
             'kapasitas' => 'required|integer|greater_than[0]',
             'jenis' => 'required'
         ])) {
@@ -96,6 +96,17 @@ class Ruangan extends BaseController
 
     public function delete($id)
     {
+        // Check if ruangan exists
+        $ruangan = $this->ruanganModel->find($id);
+        if (!$ruangan) {
+            return redirect()->to('/admin/ruangan')->with('error', 'Ruangan tidak ditemukan.');
+        }
+
+        // Update related rombel records to set ruangan_id to null
+        $rombelModel = new \App\Models\RombelModel();
+        $rombelModel->where('ruangan_id', $id)->set(['ruangan_id' => null])->update();
+
+        // Delete the ruangan
         $this->ruanganModel->delete($id);
         return redirect()->to('/admin/ruangan')->with('success', 'Ruangan berhasil dihapus.');
     }

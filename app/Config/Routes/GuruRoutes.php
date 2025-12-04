@@ -50,6 +50,7 @@ function guruRoutes(RouteCollection $routes)
         $routes->get('absensi/edit/(:num)', 'Guru\AbsensiInputController::edit/$1');
         $routes->post('absensi/update/(:num)', 'Guru\AbsensiInputController::update/$1');
         $routes->get('absensi/export', 'Guru\AbsensiReportController::export');
+        $routes->get('absensi/delete/(:num)', 'Guru\AbsensiInputController::delete/$1');
         $routes->post('absensi/process_export', 'Guru\AbsensiReportController::process_export');
         $routes->post('absensi/get-siswa-by-rombel', 'Guru\AbsensiViewController::getSiswaByRombel');
         

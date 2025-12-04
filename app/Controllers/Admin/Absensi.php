@@ -18,6 +18,7 @@ class Absensi extends BaseController
     protected $absensiModel;
     protected $jurnalModel;
     protected $siswaModel;
+    protected $hariLiburService;
     protected $db;
 
     public function __construct()
@@ -26,6 +27,7 @@ class Absensi extends BaseController
         $this->rombelModel = new RombelModel();
         $this->absensiModel = new AbsensiModel();
         $this->siswaModel = new SiswaModel();
+        $this->hariLiburService = new \App\Services\HariLiburService();
         $this->db = \Config\Database::connect();
     }
 
@@ -595,8 +597,19 @@ class Absensi extends BaseController
             return redirect()->to('/auth/login');
         }
 
-        $startDate = $this->request->getGet('start_date') ?? date('Y-m-d');
-        $endDate = $this->request->getGet('end_date') ?? date('Y-m-d');
+        // Ambil filter tanggal, default ke hari ini jika tidak ada
+        $filterDate = $this->request->getGet('filter_date') ?? date('Y-m-d');
+
+        // Validasi format tanggal
+        if (!strtotime($filterDate)) {
+            $filterDate = date('Y-m-d');
+        }
+
+        // Batasi tanggal tidak boleh melebihi hari ini
+        if ($filterDate > date('Y-m-d')) {
+            $filterDate = date('Y-m-d');
+            session()->setFlashdata('warning', 'Tanggal tidak boleh melebihi hari ini.');
+        }
 
         // Ambil data rombel
         $rombel = $this->rombelModel->find($rombelId);
@@ -604,16 +617,36 @@ class Absensi extends BaseController
             throw new \CodeIgniter\Exceptions\PageNotFoundException('Rombel tidak ditemukan');
         }
 
-        // Ambil data detail absensi per kelas
-        $detailAbsensi = $this->getDetailAbsensiPerKelas($rombelId, $startDate, $endDate);
+        // Ambil semua data rombel untuk filter
+        $rombelList = $this->rombelModel->orderBy('nama_rombel', 'ASC')->findAll();
+
+        // Cek Hari Libur
+        $isHoliday = false;
+        $holidayName = '';
+        
+        // Gunakan getDetailHariLibur untuk cek range 1 hari
+        $liburData = $this->hariLiburService->getDetailHariLibur($filterDate, $filterDate);
+        if (!empty($liburData)) {
+            $isHoliday = true;
+            $holidayName = $liburData[0]['holiday_name'];
+        }
+
+        // Ambil data detail absensi per kelas (harian)
+        // Kita gunakan filterDate untuk start dan end date agar hanya mengambil 1 hari
+        $detailAbsensi = $this->getDetailAbsensiPerKelas($rombelId, $filterDate, $filterDate);
 
         $data = [
             'title' => 'Detail Absensi Kelas ' . $rombel['nama_rombel'],
             'active' => 'absensi',
             'rombel' => $rombel,
+            'rombelList' => $rombelList,
             'detailAbsensi' => $detailAbsensi,
-            'startDate' => $startDate,
-            'endDate' => $endDate
+            'filterDate' => $filterDate,
+            'isHoliday' => $isHoliday,
+            'holidayName' => $holidayName,
+            // Keep start/end for compatibility if needed
+            'startDate' => $filterDate,
+            'endDate' => $filterDate
         ];
 
         return view('admin/absensi/detail', $data);

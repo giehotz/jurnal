@@ -110,7 +110,13 @@
                         <div class="col-12 col-md-3">
                             <div class="form-group">
                                 <label for="jam_ke">Jam Ke</label>
-                                <input type="number" name="jam_ke" id="jam_ke" class="form-control form-control-lg" min="1" max="12" placeholder="1-12">
+                                <input type="number" name="jam_ke" id="jam_ke" class="form-control form-control-lg" min="1" max="12" placeholder="Start" required>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <div class="form-group">
+                                <label for="jumlah_jam">Jumlah Jam</label>
+                                <input type="number" name="jumlah_jam" id="jumlah_jam" class="form-control form-control-lg" min="1" max="12" placeholder="Durasi" required>
                             </div>
                         </div>
                     </div>

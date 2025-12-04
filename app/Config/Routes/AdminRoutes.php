@@ -87,22 +87,21 @@ function adminRoutes(RouteCollection $routes)
         $routes->get('monitoring/detail/(:num)', 'Admin\Monitoring::detail/$1');
         $routes->get('monitoring/detail/(:num)/export/pdf', 'Admin\Monitoring::exportDetailToPdf/$1');
         $routes->get('monitoring/export/pdf', 'Admin\Monitoring::exportToPdf');
-        $routes->get('monitoring/exportToPdf', 'Admin\Monitoring::exportToPdf'); // Added missing route
+        $routes->get('monitoring/exportToPdf', 'Admin\Monitoring::exportToPdf');
         $routes->get('monitoring/detail/(:num)/export/excel', 'Admin\Monitoring::exportDetailToExcel/$1');
         $routes->get('monitoring/export/excel', 'Admin\Monitoring::exportToExcel');
-        $routes->get('monitoring/exportToExcel', 'Admin\Monitoring::exportToExcel'); // Added missing route
+        $routes->get('monitoring/exportToExcel', 'Admin\Monitoring::exportToExcel');
         
         // User Management
         $routes->get('users', 'Admin\UserManagement::index');
-        $routes->get('user-management', 'Admin\UserManagement::index'); // Menambahkan route untuk user-management
+        $routes->get('user-management', 'Admin\UserManagement::index');
         $routes->get('users/create', 'Admin\UserManagement::create');
         $routes->post('users/store', 'Admin\UserManagement::store');
         $routes->get('users/edit/(:num)', 'Admin\UserManagement::edit/$1');
         $routes->post('users/update/(:num)', 'Admin\UserManagement::update/$1');
         $routes->get('users/delete/(:num)', 'Admin\UserManagement::delete/$1');
         $routes->get('users/resetPassword/(:num)', 'Admin\UserManagement::resetPassword/$1');
-        $routes->get('users/reset_password/(:num)', 'Admin\UserManagement::resetPassword/$1'); // Tambahkan route dengan underscore
-        $routes->get('users/reset_password/(:num)', 'Admin\UserManagement::resetPassword/$1'); // Tambahkan route dengan underscore
+        $routes->get('users/reset_password/(:num)', 'Admin\UserManagement::resetPassword/$1');
         $routes->get('users/import', 'Admin\UserManagement::import');
         $routes->post('users/import', 'Admin\UserManagement::importUsersFromExcel');
         $routes->post('users/importUsersFromExcel', 'Admin\UserManagement::importUsersFromExcel');
@@ -137,7 +136,19 @@ function adminRoutes(RouteCollection $routes)
         $routes->get('qrcode/settings', 'Admin\QRCodeSettings::index');
         $routes->post('qrcode/settings/update', 'Admin\QRCodeSettings::update');
         $routes->post('qrcode/settings/reset', 'Admin\QRCodeSettings::reset');
+        $routes->post('qrcode/settings/delete-logo', 'Admin\QRCodeSettings::deleteLogo');
         
+        // Guru Management
+        $routes->get('guru', 'Admin\Guru::index');
+        $routes->get('guru/create', 'Admin\Guru::create');
+        $routes->post('guru/store', 'Admin\Guru::store');
+        $routes->get('guru/edit/(:num)', 'Admin\Guru::edit/$1');
+        $routes->post('guru/update/(:num)', 'Admin\Guru::update/$1');
+        $routes->get('guru/delete/(:num)', 'Admin\Guru::delete/$1');
+        $routes->get('guru/import', 'Admin\Guru::import');
+        $routes->post('guru/process-import', 'Admin\Guru::processImport');
+        $routes->get('guru/download-template', 'Admin\Guru::downloadTemplate');
+
         // Siswa Management
         $routes->get('siswa', 'Admin\Siswa::index');
         $routes->get('siswa/create', 'Admin\Siswa::create');
@@ -157,7 +168,6 @@ function adminRoutes(RouteCollection $routes)
         $routes->get('laporan/statistik', 'Admin\Laporan::statistik');
         $routes->get('laporan/export', 'Admin\Laporan::export');
         $routes->post('laporan/generate', 'Admin\Laporan::generate');
-        // Fix export routes to match controller methods if needed, or rely on generic export
         $routes->get('laporan/export/guru/pdf', 'Admin\Laporan::exportGuruToPdf');
         $routes->get('laporan/export/guru/excel', 'Admin\Laporan::exportGuruToExcel');
     });

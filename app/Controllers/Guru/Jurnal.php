@@ -274,8 +274,9 @@ class Jurnal extends BaseController
      */
     public function checkDailyAttendance()
     {
-        $rombelId = $this->request->getPost('rombel_id');
-        $tanggal = $this->request->getPost('tanggal');
+        $json = $this->request->getJSON(true);
+        $rombelId = $json['rombel_id'] ?? $this->request->getPost('rombel_id');
+        $tanggal = $json['tanggal'] ?? $this->request->getPost('tanggal');
         
         if (!$rombelId || !$tanggal) {
             return $this->response->setJSON(['status' => 'error', 'message' => 'Rombel dan tanggal harus diisi']);
@@ -366,6 +367,19 @@ class Jurnal extends BaseController
             ->where('tanggal', $tanggal)
             ->countAllResults() > 0;
 
+        // Fallback: Jika di rekap tidak ada, cek di tabel absensi langsung
+        if (!$absensiExists) {
+            $db = \Config\Database::connect();
+            $absensiCount = $db->table('absensi')
+                ->where('rombel_id', $rombelId)
+                ->where('tanggal', $tanggal)
+                ->countAllResults();
+            
+            if ($absensiCount > 0) {
+                $absensiExists = true;
+            }
+        }
+
         if (!$absensiExists) {
             return redirect()->to('/guru/absensi/create')
                 ->withInput()
@@ -424,7 +438,18 @@ class Jurnal extends BaseController
             $rekap = $rekapHarianModel->where('rombel_id', $this->request->getPost('rombel_id'))
                                       ->where('tanggal', $this->request->getPost('tanggal'))
                                       ->first();
-            $jumlahPeserta = $rekap ? $rekap['total_hadir'] : 0;
+            
+            if ($rekap) {
+                $jumlahPeserta = $rekap['total_hadir'];
+            } else {
+                // Fallback: Hitung manual dari tabel absensi
+                $db = \Config\Database::connect();
+                $jumlahPeserta = $db->table('absensi')
+                    ->where('rombel_id', $this->request->getPost('rombel_id'))
+                    ->where('tanggal', $this->request->getPost('tanggal'))
+                    ->where('status', 'hadir')
+                    ->countAllResults();
+            }
 
             // Prepare data
             $data = [

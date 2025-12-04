@@ -48,9 +48,15 @@
                 </select>
             </div>
             
-            <div class="mb-0">
-                <label class="block text-xs font-bold text-gray-500 mb-1">Jam Ke</label>
-                <input type="number" name="jam_ke" class="w-full bg-gray-50 border border-gray-200 text-gray-700 text-sm rounded-xl focus:ring-blue-500 focus:border-blue-500 block p-2.5" placeholder="Contoh: 1-2">
+            <div class="grid grid-cols-2 gap-4 mb-0">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 mb-1">Jam Ke</label>
+                    <input type="number" name="jam_ke" class="w-full bg-gray-50 border border-gray-200 text-gray-700 text-sm rounded-xl focus:ring-blue-500 focus:border-blue-500 block p-2.5" placeholder="Mulai" required>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 mb-1">Jml Jam</label>
+                    <input type="number" name="jumlah_jam" class="w-full bg-gray-50 border border-gray-200 text-gray-700 text-sm rounded-xl focus:ring-blue-500 focus:border-blue-500 block p-2.5" placeholder="Durasi" required>
+                </div>
             </div>
         </div>
 
@@ -72,7 +78,7 @@
         </div>
 
         <!-- Sticky Footer -->
-        <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4 z-[60] flex gap-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+        <div id="sticky-footer" style="display: none;" class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4 z-[60] flex gap-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
             <a href="<?= base_url('guru/absensi') ?>" class="flex-1 py-3 px-4 bg-gray-100 text-gray-700 font-bold rounded-xl text-center text-sm hover:bg-gray-200 transition-colors">
                 Batal
             </a>
@@ -98,11 +104,13 @@ document.getElementById('rombel_id').addEventListener('change', function() {
     const absensiList = document.getElementById('absensi-list');
     const noSiswaMessage = document.getElementById('no-siswa-message');
     const loadingMessage = document.getElementById('loading-message');
+    const stickyFooter = document.getElementById('sticky-footer');
     
     // Reset UI
     absensiList.innerHTML = '';
     absensiSection.style.display = 'none';
     noSiswaMessage.style.display = 'none';
+    stickyFooter.style.display = 'none';
     
     if (rombelId) {
         loadingMessage.style.display = 'block';
@@ -122,6 +130,7 @@ document.getElementById('rombel_id').addEventListener('change', function() {
             
             if (data.length > 0) {
                 absensiSection.style.display = 'block';
+                stickyFooter.style.display = 'flex';
                 
                 let html = '';
                 data.forEach((siswa, index) => {

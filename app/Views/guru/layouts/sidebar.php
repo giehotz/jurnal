@@ -42,6 +42,14 @@
                         <p>Dashboard</p>
                     </a>
                 </li>
+ <!-- Absensi -->
+                <li class="nav-item">
+                    <a href="<?= base_url('guru/absensi') ?>"
+                       class="nav-link <?= ($active ?? '') === 'absensi' ? 'active' : '' ?>">
+                        <i class="nav-icon fas fa-clipboard-check"></i>
+                        <p>Absensi Siswa</p>
+                    </a>
+                </li>
 
                 <!-- Jurnal -->
                 <li class="nav-item">
@@ -52,15 +60,7 @@
                     </a>
                 </li>
 
-                <!-- Absensi -->
-                <li class="nav-item">
-                    <a href="<?= base_url('guru/absensi') ?>"
-                       class="nav-link <?= ($active ?? '') === 'absensi' ? 'active' : '' ?>">
-                        <i class="nav-icon fas fa-clipboard-check"></i>
-                        <p>Absensi Siswa</p>
-                    </a>
-                </li>
-
+               
                 <!-- QR Code -->
                 <li class="nav-item">
                     <a href="<?= base_url('guru/qrcode') ?>"

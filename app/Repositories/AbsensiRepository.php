@@ -44,12 +44,12 @@ class AbsensiRepository
     {
         $builder = $this->db->table('absensi a')
             ->select('r.id as rombel_id, r.kode_rombel, r.nama_rombel, 
-                      m.nama_mapel, u.nama as nama_guru, a.tanggal,
+                      m.nama_mapel, u.nama as nama_guru, a.tanggal, a.jurnal_id,
                       COUNT(DISTINCT s.id) as jumlah_siswa,
-                      SUM(CASE WHEN a.status = "hadir" THEN 1 ELSE 0 END) as hadir,
-                      SUM(CASE WHEN a.status = "izin" THEN 1 ELSE 0 END) as izin,
-                      SUM(CASE WHEN a.status = "sakit" THEN 1 ELSE 0 END) as sakit,
-                      SUM(CASE WHEN a.status = "alfa" THEN 1 ELSE 0 END) as alfa')
+                      COUNT(DISTINCT CASE WHEN a.status = "hadir" THEN s.id END) as hadir,
+                      COUNT(DISTINCT CASE WHEN a.status = "izin" THEN s.id END) as izin,
+                      COUNT(DISTINCT CASE WHEN a.status = "sakit" THEN s.id END) as sakit,
+                      COUNT(DISTINCT CASE WHEN a.status = "alfa" THEN s.id END) as alfa')
             ->join('siswa s', 'a.siswa_id = s.id')
             ->join('rombel r', 'a.rombel_id = r.id')
             ->join('mata_pelajaran m', 'a.mapel_id = m.id', 'left')
@@ -66,15 +66,6 @@ class AbsensiRepository
             if ($rombel && $rombel['wali_kelas'] == $userId) {
                 $isWaliKelas = true;
             }
-        } else {
-            // If no specific rombel selected, we need to check if user is wali kelas of ANY rombel
-            // But the query groups by rombel, so we might need a more complex condition or just filter by guru_id if not wali kelas
-            // For simplicity, if no rombel selected, we only show what they taught OR if they are wali kelas of that specific row's rombel
-            // This is hard to do in a single simple query without subqueries or complex ORs.
-            // Let's stick to: If specific rombel selected AND user is wali kelas => show all.
-            // If no rombel selected => show only where guru_id = userId (standard teacher view)
-            // OR we can try to be smarter:
-            // WHERE a.guru_id = $userId OR r.wali_kelas = $userId
         }
 
         if ($rombelId) {
@@ -89,7 +80,7 @@ class AbsensiRepository
                     ->groupEnd();
         }
 
-        $builder->groupBy('r.id, r.kode_rombel, r.nama_rombel, m.nama_mapel, u.nama, a.tanggal')
+        $builder->groupBy('r.id, r.kode_rombel, r.nama_rombel, m.nama_mapel, u.nama, a.tanggal, a.jurnal_id')
             ->orderBy('a.tanggal', 'DESC')
             ->orderBy('r.kode_rombel', 'ASC')
             ->orderBy('m.nama_mapel', 'ASC');
@@ -101,10 +92,10 @@ class AbsensiRepository
     {
         $builder = $this->db->table('absensi a')
             ->select('DATE(a.tanggal) as tanggal,
-                      SUM(CASE WHEN a.status = "hadir" THEN 1 ELSE 0 END) as hadir,
-                      SUM(CASE WHEN a.status = "izin" THEN 1 ELSE 0 END) as izin,
-                      SUM(CASE WHEN a.status = "sakit" THEN 1 ELSE 0 END) as sakit,
-                      SUM(CASE WHEN a.status = "alfa" THEN 1 ELSE 0 END) as alfa')
+                      COUNT(DISTINCT CASE WHEN a.status = "hadir" THEN a.siswa_id END) as hadir,
+                      COUNT(DISTINCT CASE WHEN a.status = "izin" THEN a.siswa_id END) as izin,
+                      COUNT(DISTINCT CASE WHEN a.status = "sakit" THEN a.siswa_id END) as sakit,
+                      COUNT(DISTINCT CASE WHEN a.status = "alfa" THEN a.siswa_id END) as alfa')
             ->where('a.tanggal >=', $startDate)
             ->where('a.tanggal <=', $endDate);
 
