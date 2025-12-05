@@ -183,7 +183,7 @@ class Profile extends BaseController
                 $banner = $newBannerName;
             }
         } else if ($bannerFile && $bannerFile->isValid() && !$bannerFile->hasMoved()) {
-            // fallback: normal file upload for banner
+            // fallback: normal file upload for banner (when sent via FormData)
             if ($banner && file_exists(ROOTPATH . 'public/uploads/profile_banners/' . $banner)) {
                 unlink(ROOTPATH . 'public/uploads/profile_banners/' . $banner);
             }

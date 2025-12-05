@@ -830,20 +830,25 @@ if (profileForm) {
     profileForm.addEventListener('submit', function(e) {
         // If there is cropped banner base64 data, convert to File and send via FormData
         const croppedBannerVal = document.getElementById('croppedBannerData').value;
-        if (croppedBannerVal && croppedBannerVal.length > 100) {
+        if (croppedBannerVal && croppedBannerVal.trim().length > 100) {
             e.preventDefault();
 
             // helper to convert dataURL to File
             function dataURLtoFile(dataurl, filename) {
-                const arr = dataurl.split(',');
-                const mime = arr[0].match(/:(.*?);/)[1];
-                const bstr = atob(arr[1]);
-                let n = bstr.length;
-                const u8arr = new Uint8Array(n);
-                while(n--) {
-                    u8arr[n] = bstr.charCodeAt(n);
+                try {
+                    const arr = dataurl.split(',');
+                    const mime = arr[0].match(/:(.*?);/)[1];
+                    const bstr = atob(arr[1]);
+                    let n = bstr.length;
+                    const u8arr = new Uint8Array(n);
+                    while(n--) {
+                        u8arr[n] = bstr.charCodeAt(n);
+                    }
+                    return new File([u8arr], filename, { type: mime });
+                } catch (err) {
+                    console.error('Failed to convert banner to File:', err);
+                    return null;
                 }
-                return new File([u8arr], filename, { type: mime });
             }
 
             // create FormData and append all form inputs
@@ -858,7 +863,9 @@ if (profileForm) {
                 const ext = extMatch ? (extMatch[1] === 'jpeg' ? 'jpg' : extMatch[1]) : 'png';
                 const fileName = 'banner_' + Date.now() + '.' + ext;
                 const bannerFile = dataURLtoFile(croppedBannerVal, fileName);
-                fd.set('banner_image', bannerFile);
+                if (bannerFile) {
+                    fd.set('banner_image', bannerFile);
+                }
             } catch (err) {
                 console.error('Failed to convert cropped banner to file', err);
             }
@@ -882,6 +889,7 @@ if (profileForm) {
                 alert('Terjadi kesalahan saat mengunggah banner.');
             });
         }
+        // If no cropped banner data, submit form normally
     });
 }
 </script>
