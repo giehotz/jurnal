@@ -113,7 +113,7 @@
         <div class="col-lg-3 col-6 mb-3 mb-lg-0">
             <div class="monitoring-stat-card">
                 <div class="stat-icon-wrapper bg-emerald-soft">
-                    <i class="fas fa-book"></i>
+                    <i class="fas fa-book text-white"></i>
                 </div>
                 <div>
                     <div class="stat-value"><?= $cards['total_jurnal'] ?></div>
@@ -356,7 +356,7 @@
             }
         });
 
-        // Initialize Charts
+        // Initialize Charts with debug logging
         const chartData = {
             dailyActivity: <?= json_encode($daily_activity) ?>,
             studentAttendance: <?= json_encode($student_attendance) ?>,
@@ -364,6 +364,14 @@
             monthlyTrend: <?= json_encode($monthly_trend) ?>
         };
 
+        // Debug: Log data to console
+        console.log('Chart Data:', chartData);
+        console.log('Daily Activity Count:', chartData.dailyActivity ? chartData.dailyActivity.length : 0);
+        console.log('Student Attendance:', chartData.studentAttendance);
+        console.log('Class Attendance Count:', chartData.classAttendance ? chartData.classAttendance.length : 0);
+        console.log('Monthly Trend Count:', chartData.monthlyTrend ? chartData.monthlyTrend.length : 0);
+
+        // Initialize Charts
         MonitoringCharts.init(chartData);
     });
 </script>

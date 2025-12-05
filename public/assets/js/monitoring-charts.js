@@ -1,5 +1,5 @@
 /**
- * Monitoring Dashboard Charts
+ * Monitoring Dashboard Charts - Chart.js v3+ Compatible
  * Handles the rendering of charts on the Admin Monitoring page.
  */
 
@@ -28,50 +28,47 @@ window.MonitoringCharts = {
 
         this.setupDefaults();
 
-        if (data.dailyActivity) {
+        if (data.dailyActivity && Array.isArray(data.dailyActivity) && data.dailyActivity.length > 0) {
             this.initDailyActivityChart(data.dailyActivity);
         } else {
-            console.warn('No dailyActivity data found');
+            console.warn('No valid dailyActivity data found');
         }
 
-        if (data.studentAttendance) {
+        if (data.studentAttendance && Object.keys(data.studentAttendance).length > 0) {
             this.initStudentAttendanceChart(data.studentAttendance);
         } else {
-            console.warn('No studentAttendance data found');
+            console.warn('No valid studentAttendance data found');
         }
 
-        if (data.classAttendance) {
+        if (data.classAttendance && Array.isArray(data.classAttendance) && data.classAttendance.length > 0) {
             this.initClassAttendanceChart(data.classAttendance);
         } else {
-            console.warn('No classAttendance data found');
+            console.warn('No valid classAttendance data found');
         }
 
-        if (data.monthlyTrend) {
+        if (data.monthlyTrend && Array.isArray(data.monthlyTrend) && data.monthlyTrend.length > 0) {
             this.initMonthlyTrendChart(data.monthlyTrend);
         } else {
-            console.warn('No monthlyTrend data found');
+            console.warn('No valid monthlyTrend data found');
         }
     },
 
     setupDefaults: function () {
-        // Check for Chart.js v2 syntax
-        if (Chart.defaults.global) {
-            Chart.defaults.global.defaultFontFamily = this.defaults.fontFamily;
-            Chart.defaults.global.defaultFontColor = this.defaults.fontColor;
-        } else {
-            // Chart.js v3+ syntax
-            Chart.defaults.font.family = this.defaults.fontFamily;
-            Chart.defaults.color = this.defaults.fontColor;
-        }
+        // Chart.js v3+ syntax
+        Chart.defaults.font.family = this.defaults.fontFamily;
+        Chart.defaults.color = this.defaults.fontColor;
     },
 
     initDailyActivityChart: function (data) {
         const ctx = document.getElementById('dailyActivityChart');
-        if (!ctx) return;
+        if (!ctx) {
+            console.error('dailyActivityChart canvas not found');
+            return;
+        }
 
         console.log('Rendering Daily Activity Chart', data);
 
-        new Chart(ctx.getContext('2d'), {
+        new Chart(ctx, {
             type: 'line',
             data: {
                 labels: data.map(item => {
@@ -81,56 +78,66 @@ window.MonitoringCharts = {
                 datasets: [
                     {
                         label: 'Jurnal',
-                        data: data.map(item => item.jurnal),
+                        data: data.map(item => item.jurnal || 0),
                         borderColor: this.defaults.colors.primary,
                         backgroundColor: 'rgba(14, 165, 233, 0.1)',
                         pointBackgroundColor: this.defaults.colors.primary,
                         pointBorderColor: '#fff',
-                        lineTension: 0.4,
-                        fill: true
+                        tension: 0.4,
+                        fill: true,
+                        borderWidth: 2
                     },
                     {
                         label: 'Absensi',
-                        data: data.map(item => item.absensi),
+                        data: data.map(item => item.absensi || 0),
                         borderColor: this.defaults.colors.success,
                         backgroundColor: 'rgba(16, 185, 129, 0.1)',
                         pointBackgroundColor: this.defaults.colors.success,
                         pointBorderColor: '#fff',
-                        lineTension: 0.4,
-                        fill: true
+                        tension: 0.4,
+                        fill: true,
+                        borderWidth: 2
                     }
                 ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20,
+                            font: { size: 12, weight: 'bold' }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: this.defaults.colors.dark,
+                        titleFont: { family: "'Outfit', sans-serif", size: 13 },
+                        bodyFont: { family: "'Inter', sans-serif", size: 12 },
+                        cornerRadius: 8,
+                        padding: 12
+                    }
+                },
                 scales: {
-                    yAxes: [{
+                    y: {
+                        beginAtZero: true,
                         ticks: {
-                            beginAtZero: true,
                             stepSize: 1,
                             padding: 10
                         },
-                        gridLines: {
+                        grid: {
                             borderDash: [2, 4],
                             color: '#F1F5F9',
                             drawBorder: false
                         }
-                    }],
-                    xAxes: [{
-                        gridLines: {
+                    },
+                    x: {
+                        grid: {
                             display: false
                         }
-                    }]
-                },
-                legend: { position: 'top', labels: { usePointStyle: true, padding: 20 } },
-                tooltips: {
-                    backgroundColor: this.defaults.colors.dark,
-                    titleFontFamily: "'Outfit', sans-serif",
-                    bodyFontFamily: "'Inter', sans-serif",
-                    cornerRadius: 8,
-                    xPadding: 12,
-                    yPadding: 12
+                    }
                 }
             }
         });
@@ -138,17 +145,25 @@ window.MonitoringCharts = {
 
     initStudentAttendanceChart: function (data) {
         const ctx = document.getElementById('studentAttendanceChart');
-        if (!ctx) return;
+        if (!ctx) {
+            console.error('studentAttendanceChart canvas not found');
+            return;
+        }
 
         console.log('Rendering Student Attendance Chart', data);
 
-        // Ensure data properties exist
         const totalHadir = parseInt(data.total_hadir) || 0;
         const totalSakit = parseInt(data.total_sakit) || 0;
         const totalIzin = parseInt(data.total_izin) || 0;
         const totalAlfa = parseInt(data.total_alfa) || 0;
+        const total = totalHadir + totalSakit + totalIzin + totalAlfa;
 
-        new Chart(ctx.getContext('2d'), {
+        if (total === 0) {
+            console.warn('Student Attendance data is empty');
+            return;
+        }
+
+        new Chart(ctx, {
             type: 'doughnut',
             data: {
                 labels: ['Hadir', 'Sakit', 'Izin', 'Alfa'],
@@ -166,25 +181,37 @@ window.MonitoringCharts = {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } },
-                cutoutPercentage: 70
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20,
+                            font: { size: 12 }
+                        }
+                    }
+                },
+                cutout: '70%'
             }
         });
     },
 
     initClassAttendanceChart: function (data) {
         const ctx = document.getElementById('classAttendanceChart');
-        if (!ctx) return;
+        if (!ctx) {
+            console.error('classAttendanceChart canvas not found');
+            return;
+        }
 
         console.log('Rendering Class Attendance Chart', data);
 
-        let classLabels = [];
-        let classPercentages = [];
-
-        if (Array.isArray(data) && data.length > 0) {
-            classLabels = data.map(item => item.nama_rombel);
-            classPercentages = data.map(item => parseFloat(item.avg_persentase).toFixed(1));
+        if (!Array.isArray(data) || data.length === 0) {
+            console.warn('Class Attendance data is empty');
+            return;
         }
+
+        const classLabels = data.map(item => item.nama_rombel || 'Unknown');
+        const classPercentages = data.map(item => parseFloat(item.avg_persentase || 0).toFixed(1));
 
         const classColors = classPercentages.map(pct => {
             if (pct < 60) return this.defaults.colors.danger;
@@ -192,7 +219,7 @@ window.MonitoringCharts = {
             return this.defaults.colors.success;
         });
 
-        new Chart(ctx.getContext('2d'), {
+        new Chart(ctx, {
             type: 'bar',
             data: {
                 labels: classLabels,
@@ -206,99 +233,131 @@ window.MonitoringCharts = {
                 }]
             },
             options: {
+                indexAxis: 'x',
                 responsive: true,
                 maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                return context.formattedValue + '%';
+                            }
+                        },
+                        backgroundColor: this.defaults.colors.dark,
+                        titleFont: { family: "'Outfit', sans-serif", size: 13 },
+                        bodyFont: { family: "'Inter', sans-serif", size: 12 },
+                        cornerRadius: 8,
+                        padding: 12
+                    }
+                },
                 scales: {
-                    yAxes: [{
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
                         ticks: {
-                            beginAtZero: true,
-                            max: 100,
-                            callback: function (value) { return value + "%" },
+                            callback: function (value) {
+                                return value + '%';
+                            },
                             padding: 10
                         },
-                        gridLines: {
+                        grid: {
                             borderDash: [2, 4],
                             color: '#F1F5F9',
                             drawBorder: false
                         }
-                    }],
-                    xAxes: [{
-                        gridLines: {
+                    },
+                    x: {
+                        grid: {
                             display: false
                         }
-                    }]
-                },
-                tooltips: {
-                    callbacks: {
-                        label: function (tooltipItem, data) {
-                            return tooltipItem.yLabel + '%';
-                        }
-                    },
-                    backgroundColor: this.defaults.colors.dark,
-                    titleFontFamily: "'Outfit', sans-serif",
-                    bodyFontFamily: "'Inter', sans-serif",
-                    cornerRadius: 8,
-                    xPadding: 12,
-                    yPadding: 12
-                },
-                legend: { display: false }
+                    }
+                }
             }
         });
     },
 
     initMonthlyTrendChart: function (data) {
         const ctx = document.getElementById('monthlyTrendChart');
-        if (!ctx) return;
+        if (!ctx) {
+            console.error('monthlyTrendChart canvas not found');
+            return;
+        }
 
         console.log('Rendering Monthly Trend Chart', data);
 
-        new Chart(ctx.getContext('2d'), {
+        if (!Array.isArray(data) || data.length === 0) {
+            console.warn('Monthly Trend data is empty');
+            return;
+        }
+
+        new Chart(ctx, {
             type: 'line',
             data: {
-                labels: data.map(item => item.month),
+                labels: data.map(item => item.month || 'Unknown'),
                 datasets: [
                     {
                         label: 'Jurnal',
-                        data: data.map(item => item.jurnal),
+                        data: data.map(item => item.jurnal || 0),
                         borderColor: this.defaults.colors.info,
                         backgroundColor: 'rgba(139, 92, 246, 0.1)',
                         pointBackgroundColor: this.defaults.colors.info,
                         fill: true,
-                        lineTension: 0.3
+                        tension: 0.3,
+                        borderWidth: 2
                     },
                     {
                         label: 'Absensi',
-                        data: data.map(item => item.absensi),
+                        data: data.map(item => item.absensi || 0),
                         borderColor: this.defaults.colors.secondary,
                         backgroundColor: 'rgba(100, 116, 139, 0.1)',
                         pointBackgroundColor: this.defaults.colors.secondary,
                         fill: true,
-                        lineTension: 0.3
+                        tension: 0.3,
+                        borderWidth: 2
                     }
                 ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20,
+                            font: { size: 12, weight: 'bold' }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: this.defaults.colors.dark,
+                        titleFont: { family: "'Outfit', sans-serif", size: 13 },
+                        bodyFont: { family: "'Inter', sans-serif", size: 12 },
+                        cornerRadius: 8,
+                        padding: 12
+                    }
+                },
                 scales: {
-                    yAxes: [{
+                    y: {
+                        beginAtZero: true,
                         ticks: {
-                            beginAtZero: true,
                             padding: 10
                         },
-                        gridLines: {
+                        grid: {
                             borderDash: [2, 4],
                             color: '#F1F5F9',
                             drawBorder: false
                         }
-                    }],
-                    xAxes: [{
-                        gridLines: {
+                    },
+                    x: {
+                        grid: {
                             display: false
                         }
-                    }]
-                },
-                legend: { position: 'top', labels: { usePointStyle: true, padding: 20 } }
+                    }
+                }
             }
         });
     }
