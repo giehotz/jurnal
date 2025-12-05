@@ -1,6 +1,7 @@
 <?= $this->extend('guru/layouts/template') ?>
 
 <?= $this->section('styles') ?>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
 <style>
     .edit-header {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -214,6 +215,137 @@
         color: #721c24;
     }
 
+    /* Crop Modal Styles */
+    .crop-modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .crop-modal-overlay.show {
+        display: flex;
+    }
+
+    .crop-modal {
+        background: white;
+        border-radius: 10px;
+        width: 90%;
+        max-width: 600px;
+        max-height: 80vh;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .crop-modal-header {
+        padding: 20px;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .crop-modal-header h2 {
+        margin: 0;
+        font-size: 20px;
+        color: #333;
+    }
+
+    .crop-modal-header .close-btn {
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: #999;
+        transition: color 0.3s;
+    }
+
+    .crop-modal-header .close-btn:hover {
+        color: #333;
+    }
+
+    .crop-modal-body {
+        flex: 1;
+        padding: 20px;
+        overflow: auto;
+    }
+
+    .crop-container {
+        max-width: 100%;
+        max-height: 400px;
+    }
+
+    .crop-container img {
+        max-width: 100%;
+    }
+
+    .crop-modal-footer {
+        padding: 20px;
+        border-top: 1px solid #eee;
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+    }
+
+    .btn-crop-confirm {
+        background: #28a745;
+        color: white;
+        padding: 10px 24px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.3s;
+    }
+
+    .btn-crop-confirm:hover {
+        background: #218838;
+        transform: translateY(-2px);
+    }
+
+    .btn-crop-cancel {
+        background: #f0f0f0;
+        color: #333;
+        padding: 10px 24px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.3s;
+    }
+
+    .btn-crop-cancel:hover {
+        background: #e0e0e0;
+    }
+
+    .crop-tools {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 15px;
+        flex-wrap: wrap;
+    }
+
+    .crop-tool-btn {
+        padding: 8px 12px;
+        background: #f0f0f0;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+        transition: all 0.3s;
+    }
+
+    .crop-tool-btn:hover {
+        background: #e0e0e0;
+    }
+
     @media (max-width: 768px) {
         .edit-header {
             flex-direction: column;
@@ -235,6 +367,11 @@
         .btn {
             width: 100%;
             justify-content: center;
+        }
+
+        .crop-modal {
+            width: 95%;
+            max-height: 90vh;
         }
     }
 </style>
@@ -271,6 +408,7 @@
     <form action="<?= base_url('guru/profile/update') ?>" method="post" enctype="multipart/form-data">
         <?= csrf_field() ?>
         <input type="hidden" id="remove_picture" name="remove_picture" value="0">
+        <input type="hidden" id="croppedImageData" name="cropped_image_data" value="">
 
         <!-- Alerts -->
         <?php if (session()->getFlashdata('success')): ?>
@@ -355,6 +493,36 @@
             </div>
         </div>
 
+        <!-- Crop Modal -->
+        <div class="crop-modal-overlay" id="cropModalOverlay">
+            <div class="crop-modal">
+                <div class="crop-modal-header">
+                    <h2><i class="fas fa-crop"></i> Crop Foto Profil</h2>
+                    <button type="button" class="close-btn" id="closeCropModal">&times;</button>
+                </div>
+                <div class="crop-modal-body">
+                    <div class="crop-tools">
+                        <button type="button" class="crop-tool-btn" id="rotateCW">
+                            <i class="fas fa-redo"></i> Putar Kanan
+                        </button>
+                        <button type="button" class="crop-tool-btn" id="rotateCCW">
+                            <i class="fas fa-undo"></i> Putar Kiri
+                        </button>
+                        <button type="button" class="crop-tool-btn" id="resetCrop">
+                            <i class="fas fa-sync"></i> Reset
+                        </button>
+                    </div>
+                    <div class="crop-container">
+                        <img id="cropImage" src="" alt="Crop image">
+                    </div>
+                </div>
+                <div class="crop-modal-footer">
+                    <button type="button" class="btn-crop-cancel" id="cancelCrop">Batal</button>
+                    <button type="button" class="btn-crop-confirm" id="confirmCrop">Gunakan Foto Ini</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Buttons -->
         <div class="form-card">
             <div class="button-group">
@@ -369,42 +537,130 @@
     </form>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 <script>
-// Preview foto sebelum upload
+// Crop Image Variables
+let cropper;
+let selectedFile;
+
+// Open crop modal when file is selected
 document.getElementById('profile_picture').addEventListener('change', function(e) {
     const file = e.target.files[0];
-    const preview = document.getElementById('preview');
-    const removeBtn = document.getElementById('remove_picture_btn');
-    const removeInput = document.getElementById('remove_picture');
-    const previewBox = preview.parentElement;
+    if (!file) return;
+
+    selectedFile = file;
+    const reader = new FileReader();
     
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            preview.src = e.target.result;
-            previewBox.classList.add('has-image');
-            if (removeBtn) removeBtn.style.display = 'inline-flex';
-            if (removeInput) removeInput.value = '0';
+    reader.onload = function(event) {
+        const cropImage = document.getElementById('cropImage');
+        cropImage.src = event.target.result;
+        
+        // Show modal
+        document.getElementById('cropModalOverlay').classList.add('show');
+        
+        // Initialize cropper
+        if (cropper) {
+            cropper.destroy();
         }
-        reader.readAsDataURL(file);
+        
+        cropper = new Cropper(cropImage, {
+            aspectRatio: 1,
+            viewMode: 1,
+            autoCropArea: 1,
+            responsive: true,
+            restore: true,
+            guides: true,
+            center: true,
+            highlight: true,
+            cropBoxMovable: true,
+            cropBoxResizable: true,
+            toggleDragModeOnDblclick: true,
+            background: true,
+            modal: true,
+            movable: true
+        });
+    };
+    
+    reader.readAsDataURL(file);
+});
+
+// Close crop modal
+document.getElementById('closeCropModal').addEventListener('click', closeCropModal);
+document.getElementById('cancelCrop').addEventListener('click', closeCropModal);
+
+function closeCropModal() {
+    document.getElementById('cropModalOverlay').classList.remove('show');
+    if (cropper) {
+        cropper.destroy();
+        cropper = null;
+    }
+    document.getElementById('profile_picture').value = '';
+}
+
+// Rotate buttons
+document.getElementById('rotateCW').addEventListener('click', function(e) {
+    e.preventDefault();
+    if (cropper) cropper.rotate(45);
+});
+
+document.getElementById('rotateCCW').addEventListener('click', function(e) {
+    e.preventDefault();
+    if (cropper) cropper.rotate(-45);
+});
+
+document.getElementById('resetCrop').addEventListener('click', function(e) {
+    e.preventDefault();
+    if (cropper) cropper.reset();
+});
+
+// Confirm crop
+document.getElementById('confirmCrop').addEventListener('click', function(e) {
+    e.preventDefault();
+    if (!cropper) return;
+    
+    const canvas = cropper.getCroppedCanvas();
+    const croppedImageData = canvas.toDataURL();
+    
+    // Set preview
+    const preview = document.getElementById('preview');
+    preview.src = croppedImageData;
+    document.querySelector('.picture-preview-box').classList.add('has-image');
+    
+    // Store cropped image data
+    document.getElementById('croppedImageData').value = croppedImageData;
+    
+    // Show remove button if it's hidden
+    const removeBtn = document.getElementById('remove_picture_btn');
+    if (removeBtn) {
+        removeBtn.style.display = 'inline-flex';
+    }
+    
+    closeCropModal();
+});
+
+// Close modal when clicking outside
+document.getElementById('cropModalOverlay').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeCropModal();
     }
 });
 
+// Handle remove picture
+function handleRemovePicture(e) {
+    e.preventDefault();
+    const preview = document.getElementById('preview');
+    const previewBox = preview.parentElement;
+    
+    preview.src = '<?= base_url('uploads/profile_pictures/default.png') ?>';
+    previewBox.classList.remove('has-image');
+    document.getElementById('croppedImageData').value = '';
+    document.getElementById('remove_picture').value = '1';
+    this.style.display = 'none';
+}
+
 // Hapus foto
 if (document.getElementById('remove_picture_btn')) {
-    document.getElementById('remove_picture_btn').addEventListener('click', function(e) {
-        e.preventDefault();
-        const preview = document.getElementById('preview');
-        const removeInput = document.getElementById('remove_picture');
-        const fileInput = document.getElementById('profile_picture');
-        const previewBox = preview.parentElement;
-        
-        preview.src = '<?= base_url('uploads/profile_pictures/default.png') ?>';
-        previewBox.classList.remove('has-image');
-        if (removeInput) removeInput.value = '1';
-        if (fileInput) fileInput.value = '';
-        this.style.display = 'none';
-    });
+    document.getElementById('remove_picture_btn').addEventListener('click', handleRemovePicture);
 }
 </script>
 
