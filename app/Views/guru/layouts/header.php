@@ -25,6 +25,24 @@
         background-color: #e9ecef;
     }
 
+    /* Sidebar collapse styling */
+    .sidebar-collapse .main-sidebar {
+        margin-left: -260px;
+    }
+
+    .sidebar-collapse .content-wrapper,
+    .sidebar-collapse .main-footer {
+        margin-left: 0;
+    }
+
+    /* Smooth transitions for sidebar */
+    .main-sidebar,
+    .content-wrapper,
+    .main-footer,
+    .main-header {
+        transition: margin-left 0.3s ease-in-out;
+    }
+
     /* Ensure smooth sidebar transition */
     .main-sidebar {
         transition: transform 0.3s ease-in-out, margin 0.3s ease-in-out;
@@ -34,6 +52,16 @@
     .main-footer,
     .main-header {
         transition: margin 0.3s ease-in-out;
+    }
+
+    /* Pushmenu button styling */
+    [data-widget="pushmenu"] {
+        cursor: pointer;
+        user-select: none;
+    }
+
+    [data-widget="pushmenu"]:hover {
+        opacity: 0.8;
     }
 </style>
 

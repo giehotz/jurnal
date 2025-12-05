@@ -67,51 +67,111 @@
 
         <!-- Tambahkan script untuk inisialisasi komponen AdminLTE -->
         <script>
-            document.addEventListener('DOMContentLoaded', function() {
+            // Gunakan jQuery ready untuk memastikan semua library terload
+            $(document).ready(function() {
+                console.log('Initializing AdminLTE components...');
+
                 // Inisialisasi layout AdminLTE
-                if (typeof $.fn.layout !== 'undefined') {
-                    $('body').layout({
-                        scroll: true,
-                        fixedSidebar: true,
-                        fixedNavbar: true
-                    });
+                try {
+                    if (typeof $.fn.layout !== 'undefined') {
+                        $('body').layout({
+                            scroll: true,
+                            fixedSidebar: true,
+                            fixedNavbar: true
+                        });
+                        console.log('✓ Layout initialized');
+                    }
+                } catch(e) {
+                    console.warn('Layout error:', e);
                 }
 
                 // Inisialisasi komponen treeview
-                if (typeof $.fn.Treeview !== 'undefined') {
-                    $('[data-widget="treeview"]').Treeview();
+                try {
+                    if (typeof $.fn.Treeview !== 'undefined') {
+                        $('[data-widget="treeview"]').Treeview();
+                        console.log('✓ Treeview initialized');
+                    }
+                } catch(e) {
+                    console.warn('Treeview error:', e);
                 }
 
-                // Inisialisasi komponen lainnya jika ada
-                if (typeof $.fn.PushMenu !== 'undefined') {
-                    $('[data-widget="pushmenu"]').PushMenu();
+                // Inisialisasi PushMenu untuk sidebar collapse
+                try {
+                    if (typeof $.fn.PushMenu !== 'undefined') {
+                        $('[data-widget="pushmenu"]').PushMenu();
+                        console.log('✓ PushMenu initialized');
+                    } else {
+                        console.warn('⚠ PushMenu plugin not found');
+                    }
+                } catch(e) {
+                    console.error('PushMenu error:', e);
                 }
 
-                if (typeof $.fn.ControlSidebar !== 'undefined') {
-                    $('[data-widget="control-sidebar"]').ControlSidebar();
+                // Inisialisasi ControlSidebar
+                try {
+                    if (typeof $.fn.ControlSidebar !== 'undefined') {
+                        $('[data-widget="control-sidebar"]').ControlSidebar();
+                        console.log('✓ ControlSidebar initialized');
+                    }
+                } catch(e) {
+                    console.warn('ControlSidebar error:', e);
                 }
 
-                if (typeof $.fn.Dropdown !== 'undefined') {
-                    $('[data-widget="dropdown"]').Dropdown();
+                // Inisialisasi Dropdown
+                try {
+                    if (typeof $.fn.Dropdown !== 'undefined') {
+                        $('[data-widget="dropdown"]').Dropdown();
+                        console.log('✓ Dropdown initialized');
+                    }
+                } catch(e) {
+                    console.warn('Dropdown error:', e);
                 }
 
                 // Inisialisasi tab Bootstrap 4
-                if (typeof $.fn.tab !== 'undefined') {
-                    $('button[data-toggle="tab"]').on('shown.bs.tab', function(event) {
-                        // Tab telah diaktifkan
-                    });
+                try {
+                    if (typeof $.fn.tab !== 'undefined') {
+                        $('button[data-toggle="tab"]').on('shown.bs.tab', function(event) {
+                            console.log('Tab activated:', $(this).attr('href'));
+                        });
+                        console.log('✓ Tab initialization set up');
+                    }
+                } catch(e) {
+                    console.warn('Tab error:', e);
                 }
 
                 // Inisialisasi semua Tempusdominus DateTimePicker
-                if (typeof $.fn.datetimepicker !== 'undefined') {
-                    $('[id$="_picker"]').datetimepicker({
-                        format: 'DD/MM/YYYY',
-                        locale: 'id',
-                        allowInputToggle: true,
-                        useCurrent: false
+                try {
+                    if (typeof $.fn.datetimepicker !== 'undefined') {
+                        $('[id$="_picker"]').datetimepicker({
+                            format: 'DD/MM/YYYY',
+                            locale: 'id',
+                            allowInputToggle: true,
+                            useCurrent: false
+                        });
+                        console.log('✓ DateTimePicker initialized');
+                    }
+                } catch(e) {
+                    console.warn('DateTimePicker error:', e);
+                }
+
+                // Fallback: Tambah click handler untuk sidebar toggle jika PushMenu gagal
+                try {
+                    $('[data-widget="pushmenu"]').on('click', function(e) {
+                        e.preventDefault();
+                        $('body').toggleClass('sidebar-collapse');
+                        console.log('Sidebar toggled via fallback');
                     });
+                } catch(e) {
+                    console.warn('Fallback PushMenu handler error:', e);
                 }
             });
+
+            // Alternative: Inisialisasi dengan DOMContentLoaded sebagai fallback
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', function() {
+                    console.log('DOMContentLoaded fired');
+                });
+            }
         </script>
 
         <!-- Chart.js untuk grafik aktivitas mengajar -->

@@ -96,8 +96,22 @@
 <!-- SweetAlert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+<!-- Initialize AdminLTE Components -->
 <script>
-    $(function() {
+    $(document).ready(function() {
+        console.log('Initializing AdminLTE components...');
+
+        // Inisialisasi PushMenu untuk sidebar collapse
+        try {
+            if (typeof $.fn.PushMenu !== 'undefined') {
+                $('[data-widget="pushmenu"]').PushMenu();
+                console.log('✓ PushMenu initialized');
+            }
+        } catch(e) {
+            console.error('PushMenu error:', e);
+        }
+
+        // SweetAlert flash messages
         <?php if (session()->getFlashdata('success')): ?>
             Swal.fire({
                 icon: 'success',
@@ -115,6 +129,17 @@
                 text: '<?= session()->getFlashdata('error') ?>',
             });
         <?php endif; ?>
+
+        // Fallback: Tambah click handler untuk sidebar toggle jika PushMenu gagal
+        try {
+            $('[data-widget="pushmenu"]').on('click', function(e) {
+                e.preventDefault();
+                $('body').toggleClass('sidebar-collapse');
+                console.log('Sidebar toggled via fallback');
+            });
+        } catch(e) {
+            console.warn('Fallback PushMenu handler error:', e);
+        }
     });
 </script>
 
