@@ -73,53 +73,86 @@ var GuruAbsensi = {
             return;
         }
 
-        // Chart.js v3+ syntax
+        // Hitung total untuk tren line chart
+        var totalData = data.hadir.map((val, idx) => {
+            return (val || 0) + (data.izin[idx] || 0) + (data.sakit[idx] || 0) + (data.alfa[idx] || 0);
+        });
+
+        // Chart.js v3+ syntax - Kombinasi Bar dan Line Chart
         new Chart(ctx, {
             type: 'bar',
             data: {
                 labels: data.labels || [],
                 datasets: [
                     {
+                        type: 'bar',
                         label: 'Hadir',
                         data: data.hadir || [],
                         backgroundColor: 'rgba(40, 167, 69, 0.8)', // green
                         borderColor: 'rgba(40, 167, 69, 1)',
                         borderWidth: 1,
                         borderRadius: 4,
-                        barPercentage: 0.7
+                        barPercentage: 0.6,
+                        yAxisID: 'y'
                     },
                     {
+                        type: 'bar',
                         label: 'Izin',
                         data: data.izin || [],
                         backgroundColor: 'rgba(23, 162, 184, 0.8)', // blue
                         borderColor: 'rgba(23, 162, 184, 1)',
                         borderWidth: 1,
                         borderRadius: 4,
-                        barPercentage: 0.7
+                        barPercentage: 0.6,
+                        yAxisID: 'y'
                     },
                     {
+                        type: 'bar',
                         label: 'Sakit',
                         data: data.sakit || [],
                         backgroundColor: 'rgba(255, 193, 7, 0.8)', // yellow
                         borderColor: 'rgba(255, 193, 7, 1)',
                         borderWidth: 1,
                         borderRadius: 4,
-                        barPercentage: 0.7
+                        barPercentage: 0.6,
+                        yAxisID: 'y'
                     },
                     {
+                        type: 'bar',
                         label: 'Alfa',
                         data: data.alfa || [],
                         backgroundColor: 'rgba(220, 53, 69, 0.8)', // red
                         borderColor: 'rgba(220, 53, 69, 1)',
                         borderWidth: 1,
                         borderRadius: 4,
-                        barPercentage: 0.7
+                        barPercentage: 0.6,
+                        yAxisID: 'y'
+                    },
+                    {
+                        type: 'line',
+                        label: 'Total Siswa Diinput',
+                        data: totalData,
+                        borderColor: 'rgba(156, 39, 176, 1)', // purple
+                        backgroundColor: 'rgba(156, 39, 176, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        pointRadius: 5,
+                        pointBackgroundColor: 'rgba(156, 39, 176, 1)',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        tension: 0.4,
+                        yAxisID: 'y1',
+                        order: 1
                     }
                 ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
                 plugins: {
                     legend: {
                         position: 'top',
@@ -134,11 +167,31 @@ var GuruAbsensi = {
                         titleFont: { family: "'Outfit', sans-serif", size: 13 },
                         bodyFont: { family: "'Inter', sans-serif", size: 12 },
                         cornerRadius: 8,
-                        padding: 12
+                        padding: 12,
+                        callbacks: {
+                            afterLabel: function(context) {
+                                if (context.datasetIndex < 4) {
+                                    var hadir = data.hadir[context.dataIndex] || 0;
+                                    var izin = data.izin[context.dataIndex] || 0;
+                                    var sakit = data.sakit[context.dataIndex] || 0;
+                                    var alfa = data.alfa[context.dataIndex] || 0;
+                                    var total = hadir + izin + sakit + alfa;
+                                    return 'Total: ' + total;
+                                }
+                            }
+                        }
                     }
                 },
                 scales: {
                     y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: 'Jumlah Siswa (Bar Chart)',
+                            font: { size: 11, weight: 'bold' }
+                        },
                         beginAtZero: true,
                         ticks: {
                             stepSize: 1,
@@ -148,6 +201,20 @@ var GuruAbsensi = {
                             borderDash: [2, 4],
                             color: '#F1F5F9',
                             drawBorder: false
+                        }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        title: {
+                            display: true,
+                            text: 'Total Diinput (Line Chart)',
+                            font: { size: 11, weight: 'bold' }
+                        },
+                        beginAtZero: true,
+                        grid: {
+                            drawOnChartArea: false
                         }
                     },
                     x: {
