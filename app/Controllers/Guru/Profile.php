@@ -148,41 +148,42 @@ class Profile extends BaseController
                 unlink(ROOTPATH . 'public/uploads/profile_banners/' . $banner);
             }
             $banner = null;
-        }
-        // If there is cropped banner data (base64)
-        else if (!empty($croppedBannerData)) {
-            if (preg_match('/^data:image\/(\w+);base64,/', $croppedBannerData, $type)) {
-                $dataBanner = substr($croppedBannerData, strpos($croppedBannerData, ',') + 1);
-                $dataBanner = base64_decode($dataBanner);
-                $extBanner = strtolower($type[1]) === 'jpeg' ? 'jpg' : strtolower($type[1]);
+        } else {
+            // If there is cropped banner data (base64)
+            if (!empty($croppedBannerData)) {
+                if (preg_match('/^data:image\/(\w+);base64,/', $croppedBannerData, $type)) {
+                    $dataBanner = substr($croppedBannerData, strpos($croppedBannerData, ',') + 1);
+                    $dataBanner = base64_decode($dataBanner);
+                    $extBanner = strtolower($type[1]) === 'jpeg' ? 'jpg' : strtolower($type[1]);
 
-                // remove old banner
+                    // remove old banner
+                    if ($banner && file_exists(ROOTPATH . 'public/uploads/profile_banners/' . $banner)) {
+                        unlink(ROOTPATH . 'public/uploads/profile_banners/' . $banner);
+                    }
+
+                    // ensure directory exists
+                    if (!is_dir(ROOTPATH . 'public/uploads/profile_banners/')) {
+                        mkdir(ROOTPATH . 'public/uploads/profile_banners/', 0755, true);
+                    }
+
+                    $newBannerName = bin2hex(random_bytes(8)) . '.' . $extBanner;
+                    $saveBannerPath = ROOTPATH . 'public/uploads/profile_banners/' . $newBannerName;
+                    file_put_contents($saveBannerPath, $dataBanner);
+                    $banner = $newBannerName;
+                }
+            }
+            // fallback: normal file upload for banner
+            else if ($bannerFile && $bannerFile->isValid() && !$bannerFile->hasMoved()) {
                 if ($banner && file_exists(ROOTPATH . 'public/uploads/profile_banners/' . $banner)) {
                     unlink(ROOTPATH . 'public/uploads/profile_banners/' . $banner);
                 }
-
-                // ensure directory exists
                 if (!is_dir(ROOTPATH . 'public/uploads/profile_banners/')) {
                     mkdir(ROOTPATH . 'public/uploads/profile_banners/', 0755, true);
                 }
-
-                $newBannerName = bin2hex(random_bytes(8)) . '.' . $extBanner;
-                $saveBannerPath = ROOTPATH . 'public/uploads/profile_banners/' . $newBannerName;
-                file_put_contents($saveBannerPath, $dataBanner);
+                $newBannerName = $bannerFile->getRandomName();
+                $bannerFile->move(ROOTPATH . 'public/uploads/profile_banners/', $newBannerName);
                 $banner = $newBannerName;
             }
-        }
-        // fallback: normal file upload for banner
-        else if ($bannerFile && $bannerFile->isValid() && !$bannerFile->hasMoved()) {
-            if ($banner && file_exists(ROOTPATH . 'public/uploads/profile_banners/' . $banner)) {
-                unlink(ROOTPATH . 'public/uploads/profile_banners/' . $banner);
-            }
-            if (!is_dir(ROOTPATH . 'public/uploads/profile_banners/')) {
-                mkdir(ROOTPATH . 'public/uploads/profile_banners/', 0755, true);
-            }
-            $newBannerName = $bannerFile->getRandomName();
-            $bannerFile->move(ROOTPATH . 'public/uploads/profile_banners/', $newBannerName);
-            $banner = $newBannerName;
         }
         else if ($file && $file->isValid() && !$file->hasMoved()) {
             // Hapus foto profil lama jika ada dan bukan foto default
