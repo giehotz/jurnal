@@ -823,6 +823,67 @@ function handleRemoveBanner(e) {
 if (document.getElementById('remove_banner_btn')) {
     document.getElementById('remove_banner_btn').addEventListener('click', handleRemoveBanner);
 }
+
+// Intercept form submit to convert cropped banner base64 into a binary File
+const profileForm = document.querySelector('form[action="<?= base_url('guru/profile/update') ?>"]');
+if (profileForm) {
+    profileForm.addEventListener('submit', function(e) {
+        // If there is cropped banner base64 data, convert to File and send via FormData
+        const croppedBannerVal = document.getElementById('croppedBannerData').value;
+        if (croppedBannerVal && croppedBannerVal.length > 100) {
+            e.preventDefault();
+
+            // helper to convert dataURL to File
+            function dataURLtoFile(dataurl, filename) {
+                const arr = dataurl.split(',');
+                const mime = arr[0].match(/:(.*?);/)[1];
+                const bstr = atob(arr[1]);
+                let n = bstr.length;
+                const u8arr = new Uint8Array(n);
+                while(n--) {
+                    u8arr[n] = bstr.charCodeAt(n);
+                }
+                return new File([u8arr], filename, { type: mime });
+            }
+
+            // create FormData and append all form inputs
+            const fd = new FormData(profileForm);
+
+            // Remove the cropped banner base64 so server doesn't pick base64 route
+            fd.set('cropped_banner_data', '');
+
+            // create File from base64 and append as banner_image
+            try {
+                const extMatch = croppedBannerVal.match(/^data:image\/(\w+);base64,/);
+                const ext = extMatch ? (extMatch[1] === 'jpeg' ? 'jpg' : extMatch[1]) : 'png';
+                const fileName = 'banner_' + Date.now() + '.' + ext;
+                const bannerFile = dataURLtoFile(croppedBannerVal, fileName);
+                fd.set('banner_image', bannerFile);
+            } catch (err) {
+                console.error('Failed to convert cropped banner to file', err);
+            }
+
+            // send via fetch
+            fetch(profileForm.action, {
+                method: 'POST',
+                body: fd,
+                credentials: 'same-origin'
+            }).then(function(response) {
+                if (response.redirected) {
+                    window.location.href = response.url;
+                } else if (response.ok) {
+                    // fallback: reload
+                    window.location.reload();
+                } else {
+                    alert('Gagal mengunggah banner. Silakan coba lagi.');
+                }
+            }).catch(function(err) {
+                console.error(err);
+                alert('Terjadi kesalahan saat mengunggah banner.');
+            });
+        }
+    });
+}
 </script>
 
 <?= $this->endSection() ?>
