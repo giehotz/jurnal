@@ -1,0 +1,194 @@
+/* CSS untuk tampilan mobile tabel absensi dan jurnal */
+@media (max-width: 767px) {
+  /* Untuk tabel rekapitulasi absensi per kelas - versi mobile */
+  .table-mobile-responsive {
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 1rem;
+    background-color: transparent;
+  }
+
+  .table-mobile-responsive thead {
+    display: none;
+  }
+
+  .table-mobile-responsive tbody td {
+    display: block;
+    text-align: right;
+    padding: 0.5rem;
+    border: 1px solid #dee2e6;
+    position: relative;
+  }
+
+  .table-mobile-responsive tbody td:before {
+    content: attr(data-label) ": ";
+    float: left;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-right: 10px;
+  }
+
+  .table-mobile-responsive tbody tr {
+    display: block;
+    margin-bottom: 1rem;
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+  }
+
+  .table-mobile-responsive tbody tr td:last-child {
+    border-bottom: 0;
+  }
+
+  /* Card styling untuk tampilan mobile */
+  .mobile-card {
+    margin-bottom: 1rem;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    background-color: #fff;
+    padding: 1rem;
+  }
+
+  .mobile-card-header {
+    font-weight: bold;
+    border-bottom: 1px solid #dee2e6;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+
+  .mobile-card-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.25rem;
+  }
+
+  .mobile-card-label {
+    font-weight: bold;
+  }
+
+  /* Jurnal Mobile Styles */
+  .card-header {
+      padding: 0.75rem;
+  }
+  
+  .card-header h3 {
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+  }
+  
+  .card-tools {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      width: 100%;
+      margin-top: 0.5rem;
+  }
+  
+  .card-tools .btn {
+      width: 100%;
+      font-size: 0.875rem;
+  }
+  
+  /* Mobile Table Styles */
+  .table-responsive {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+  }
+  
+  .table {
+      font-size: 0.875rem;
+  }
+  
+  .table th,
+  .table td {
+      padding: 0.5rem;
+      white-space: nowrap;
+  }
+  
+  /* Action buttons */
+  .btn-sm {
+      padding: 0.25rem 0.5rem;
+      font-size: 0.75rem;
+  }
+  
+  .btn-sm i {
+      font-size: 0.875rem;
+  }
+  
+  /* Alert styles */
+  .alert {
+      font-size: 0.875rem;
+      padding: 0.75rem;
+  }
+  
+  .alert h5 {
+      font-size: 1rem;
+  }
+  
+  /* Badge styles */
+  .badge {
+      font-size: 0.75rem;
+  }
+  
+  /* Card mobile layout */
+  .mobile-card-view {
+      display: block;
+  }
+  
+  .desktop-table-view {
+      display: none;
+  }
+  
+  .jurnal-card {
+      border: 1px solid #dee2e6;
+      border-radius: 0.25rem;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      background: white;
+  }
+  
+  .jurnal-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid #e9ecef;
+  }
+  
+  .jurnal-card-body {
+      margin-bottom: 0.75rem;
+  }
+  
+  .jurnal-card-footer {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+  }
+  
+  .jurnal-info-row {
+      display: flex;
+      margin-bottom: 0.5rem;
+      font-size: 0.875rem;
+  }
+  
+  .jurnal-info-label {
+      font-weight: 600;
+      min-width: 80px;
+      color: #6c757d;
+  }
+  
+  .jurnal-info-value {
+      flex: 1;
+  }
+}
+
+@media (min-width: 769px) {
+  .mobile-card-view {
+      display: none;
+  }
+  
+  .desktop-table-view {
+      display: block;
+  }
+}

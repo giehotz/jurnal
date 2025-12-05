@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Date Picker Test</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <!-- AdminLTE -->
+    <link rel="stylesheet" href="AdminLTE/dist/css/adminlte.min.css">
+    <!-- Tempusdominus Bootstrap 4 -->
+    <link rel="stylesheet" href="AdminLTE/plugins/tempusdominus-bootstrap-4/css/tempusdominus-bootstrap-4.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Date Picker Debug Test</h1>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>Date Picker</label>
+                    <div class="input-group date" id="test_datepicker" data-target-input="nearest">
+                        <input type="text" class="form-control datetimepicker-input" data-target="#test_datepicker"/>
+                        <div class="input-group-append" data-target="#test_datepicker" data-toggle="datetimepicker">
+                            <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="status" class="alert alert-info">Checking dependencies...</div>
+    </div>
+
+    <!-- jQuery -->
+    <script src="AdminLTE/plugins/jquery/jquery.min.js"></script>
+    <!-- Moment.js -->
+    <script src="AdminLTE/plugins/moment/moment.min.js"></script>
+    <!-- Bootstrap 4 -->
+    <script src="AdminLTE/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <!-- Tempusdominus Bootstrap 4 -->
+    <script src="AdminLTE/plugins/tempusdominus-bootstrap-4/js/tempusdominus-bootstrap-4.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            var status = [];
+            if (typeof jQuery === 'undefined') {
+                status.push("jQuery NOT loaded");
+            } else {
+                status.push("jQuery loaded v" + jQuery.fn.jquery);
+            }
+
+            if (typeof moment === 'undefined') {
+                status.push("Moment NOT loaded");
+            } else {
+                status.push("Moment loaded");
+            }
+
+            if (typeof $.fn.datetimepicker === 'undefined') {
+                status.push("TempusDominus NOT loaded");
+            } else {
+                status.push("TempusDominus loaded");
+            }
+
+            $('#status').html(status.join("<br>"));
+
+            if (typeof $.fn.datetimepicker !== 'undefined') {
+                $('#test_datepicker').datetimepicker({
+                    format: 'DD/MM/YYYY'
+                });
+                $('#status').append("<br>Datepicker initialized.");
+            }
+        });
+    </script>
+</body>
+</html>

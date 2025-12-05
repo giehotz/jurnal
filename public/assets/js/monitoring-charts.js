@@ -1,5 +1,5 @@
 /**
- * Monitoring Dashboard Charts - Chart.js v3+ Compatible
+ * Monitoring Dashboard Charts - Chart.js v2 Compatible
  * Handles the rendering of charts on the Admin Monitoring page.
  */
 
@@ -54,9 +54,9 @@ window.MonitoringCharts = {
     },
 
     setupDefaults: function () {
-        // Chart.js v3+ syntax
-        Chart.defaults.font.family = this.defaults.fontFamily;
-        Chart.defaults.color = this.defaults.fontColor;
+        // Chart.js v2 syntax
+        Chart.defaults.global.defaultFontFamily = this.defaults.fontFamily;
+        Chart.defaults.global.defaultFontColor = this.defaults.fontColor;
     },
 
     initDailyActivityChart: function (data) {
@@ -83,7 +83,7 @@ window.MonitoringCharts = {
                         backgroundColor: 'rgba(14, 165, 233, 0.1)',
                         pointBackgroundColor: this.defaults.colors.primary,
                         pointBorderColor: '#fff',
-                        tension: 0.4,
+                        lineTension: 0.4,
                         fill: true,
                         borderWidth: 2
                     },
@@ -94,7 +94,7 @@ window.MonitoringCharts = {
                         backgroundColor: 'rgba(16, 185, 129, 0.1)',
                         pointBackgroundColor: this.defaults.colors.success,
                         pointBorderColor: '#fff',
-                        tension: 0.4,
+                        lineTension: 0.4,
                         fill: true,
                         borderWidth: 2
                     }
@@ -103,41 +103,45 @@ window.MonitoringCharts = {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                        labels: {
-                            usePointStyle: true,
-                            padding: 20,
-                            font: { size: 12, weight: 'bold' }
-                        }
-                    },
-                    tooltip: {
-                        backgroundColor: this.defaults.colors.dark,
-                        titleFont: { family: "'Outfit', sans-serif", size: 13 },
-                        bodyFont: { family: "'Inter', sans-serif", size: 12 },
-                        cornerRadius: 8,
-                        padding: 12
+                legend: {
+                    position: 'top',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 20,
+                        fontSize: 12,
+                        fontStyle: 'bold'
                     }
                 },
+                tooltips: {
+                    backgroundColor: this.defaults.colors.dark,
+                    titleFontFamily: "'Outfit', sans-serif",
+                    titleFontSize: 13,
+                    bodyFontFamily: "'Inter', sans-serif",
+                    bodyFontSize: 12,
+                    cornerRadius: 8,
+                    xPadding: 12,
+                    yPadding: 12,
+                    mode: 'index',
+                    intersect: false
+                },
                 scales: {
-                    y: {
-                        beginAtZero: true,
+                    yAxes: [{
                         ticks: {
+                            beginAtZero: true,
                             stepSize: 1,
                             padding: 10
                         },
-                        grid: {
+                        gridLines: {
                             borderDash: [2, 4],
                             color: '#F1F5F9',
                             drawBorder: false
                         }
-                    },
-                    x: {
-                        grid: {
+                    }],
+                    xAxes: [{
+                        gridLines: {
                             display: false
                         }
-                    }
+                    }]
                 }
             }
         });
@@ -181,17 +185,15 @@ window.MonitoringCharts = {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            usePointStyle: true,
-                            padding: 20,
-                            font: { size: 12 }
-                        }
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 20,
+                        fontSize: 12
                     }
                 },
-                cutout: '70%'
+                cutoutPercentage: 70
             }
         });
     },
@@ -227,53 +229,53 @@ window.MonitoringCharts = {
                     label: 'Persentase Kehadiran (%)',
                     data: classPercentages,
                     backgroundColor: classColors,
-                    borderRadius: 4,
+                    // borderRadius not supported in v2
                     barPercentage: 0.6,
                     categoryPercentage: 0.8
                 }]
             },
             options: {
-                indexAxis: 'x',
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
+                legend: {
+                    display: false
+                },
+                tooltips: {
+                    callbacks: {
+                        label: function (tooltipItem, data) {
+                            return tooltipItem.yLabel + '%';
+                        }
                     },
-                    tooltip: {
-                        callbacks: {
-                            label: function (context) {
-                                return context.formattedValue + '%';
-                            }
-                        },
-                        backgroundColor: this.defaults.colors.dark,
-                        titleFont: { family: "'Outfit', sans-serif", size: 13 },
-                        bodyFont: { family: "'Inter', sans-serif", size: 12 },
-                        cornerRadius: 8,
-                        padding: 12
-                    }
+                    backgroundColor: this.defaults.colors.dark,
+                    titleFontFamily: "'Outfit', sans-serif",
+                    titleFontSize: 13,
+                    bodyFontFamily: "'Inter', sans-serif",
+                    bodyFontSize: 12,
+                    cornerRadius: 8,
+                    xPadding: 12,
+                    yPadding: 12
                 },
                 scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: 100,
+                    yAxes: [{
                         ticks: {
+                            beginAtZero: true,
+                            max: 100,
                             callback: function (value) {
                                 return value + '%';
                             },
                             padding: 10
                         },
-                        grid: {
+                        gridLines: {
                             borderDash: [2, 4],
                             color: '#F1F5F9',
                             drawBorder: false
                         }
-                    },
-                    x: {
-                        grid: {
+                    }],
+                    xAxes: [{
+                        gridLines: {
                             display: false
                         }
-                    }
+                    }]
                 }
             }
         });
@@ -305,7 +307,7 @@ window.MonitoringCharts = {
                         backgroundColor: 'rgba(139, 92, 246, 0.1)',
                         pointBackgroundColor: this.defaults.colors.info,
                         fill: true,
-                        tension: 0.3,
+                        lineTension: 0.3,
                         borderWidth: 2
                     },
                     {
@@ -315,7 +317,7 @@ window.MonitoringCharts = {
                         backgroundColor: 'rgba(100, 116, 139, 0.1)',
                         pointBackgroundColor: this.defaults.colors.secondary,
                         fill: true,
-                        tension: 0.3,
+                        lineTension: 0.3,
                         borderWidth: 2
                     }
                 ]
@@ -323,40 +325,44 @@ window.MonitoringCharts = {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                        labels: {
-                            usePointStyle: true,
-                            padding: 20,
-                            font: { size: 12, weight: 'bold' }
-                        }
-                    },
-                    tooltip: {
-                        backgroundColor: this.defaults.colors.dark,
-                        titleFont: { family: "'Outfit', sans-serif", size: 13 },
-                        bodyFont: { family: "'Inter', sans-serif", size: 12 },
-                        cornerRadius: 8,
-                        padding: 12
+                legend: {
+                    position: 'top',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 20,
+                        fontSize: 12,
+                        fontStyle: 'bold'
                     }
                 },
+                tooltips: {
+                    backgroundColor: this.defaults.colors.dark,
+                    titleFontFamily: "'Outfit', sans-serif",
+                    titleFontSize: 13,
+                    bodyFontFamily: "'Inter', sans-serif",
+                    bodyFontSize: 12,
+                    cornerRadius: 8,
+                    xPadding: 12,
+                    yPadding: 12,
+                    mode: 'index',
+                    intersect: false
+                },
                 scales: {
-                    y: {
-                        beginAtZero: true,
+                    yAxes: [{
                         ticks: {
+                            beginAtZero: true,
                             padding: 10
                         },
-                        grid: {
+                        gridLines: {
                             borderDash: [2, 4],
                             color: '#F1F5F9',
                             drawBorder: false
                         }
-                    },
-                    x: {
-                        grid: {
+                    }],
+                    xAxes: [{
+                        gridLines: {
                             display: false
                         }
-                    }
+                    }]
                 }
             }
         });

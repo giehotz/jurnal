@@ -1,136 +1,13 @@
 <?= $this->extend('guru/layouts/template') ?>
 
+<?= $this->section('styles') ?>
+<link rel="stylesheet" href="<?= base_url('assets/css/guru-responsive.css') ?>">
+<!-- DataTables -->
+<link rel="stylesheet" href="<?= base_url('AdminLTE/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css') ?>">
+<link rel="stylesheet" href="<?= base_url('AdminLTE/plugins/datatables-responsive/css/responsive.bootstrap4.min.css') ?>">
+<?= $this->endSection() ?>
+
 <?= $this->section('content') ?>
-<style>
-/* Mobile Responsive Styles */
-@media (max-width: 768px) {
-    .card-header {
-        padding: 0.75rem;
-    }
-    
-    .card-header h3 {
-        font-size: 1rem;
-        margin-bottom: 0.5rem;
-    }
-    
-    .card-tools {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-        width: 100%;
-        margin-top: 0.5rem;
-    }
-    
-    .card-tools .btn {
-        width: 100%;
-        font-size: 0.875rem;
-    }
-    
-    /* Mobile Table Styles */
-    .table-responsive {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-    }
-    
-    .table {
-        font-size: 0.875rem;
-    }
-    
-    .table th,
-    .table td {
-        padding: 0.5rem;
-        white-space: nowrap;
-    }
-    
-    /* Action buttons */
-    .btn-sm {
-        padding: 0.25rem 0.5rem;
-        font-size: 0.75rem;
-    }
-    
-    .btn-sm i {
-        font-size: 0.875rem;
-    }
-    
-    /* Alert styles */
-    .alert {
-        font-size: 0.875rem;
-        padding: 0.75rem;
-    }
-    
-    .alert h5 {
-        font-size: 1rem;
-    }
-    
-    /* Badge styles */
-    .badge {
-        font-size: 0.75rem;
-    }
-    
-    /* Card mobile layout */
-    .mobile-card-view {
-        display: block;
-    }
-    
-    .desktop-table-view {
-        display: none;
-    }
-    
-    .jurnal-card {
-        border: 1px solid #dee2e6;
-        border-radius: 0.25rem;
-        padding: 1rem;
-        margin-bottom: 1rem;
-        background: white;
-    }
-    
-    .jurnal-card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: start;
-        margin-bottom: 0.75rem;
-        padding-bottom: 0.75rem;
-        border-bottom: 1px solid #e9ecef;
-    }
-    
-    .jurnal-card-body {
-        margin-bottom: 0.75rem;
-    }
-    
-    .jurnal-card-footer {
-        display: flex;
-        gap: 0.5rem;
-        flex-wrap: wrap;
-    }
-    
-    .jurnal-info-row {
-        display: flex;
-        margin-bottom: 0.5rem;
-        font-size: 0.875rem;
-    }
-    
-    .jurnal-info-label {
-        font-weight: 600;
-        min-width: 80px;
-        color: #6c757d;
-    }
-    
-    .jurnal-info-value {
-        flex: 1;
-    }
-}
-
-@media (min-width: 769px) {
-    .mobile-card-view {
-        display: none;
-    }
-    
-    .desktop-table-view {
-        display: block;
-    }
-}
-</style>
-
 <div class="row">
     <div class="col-12">
         <div class="card">
@@ -150,11 +27,11 @@
                 <?php if (isset($is_wali_kelas) && $is_wali_kelas): ?>
                     <div class="alert alert-info">
                         <h5><i class="icon fas fa-info"></i> Informasi Wali Kelas</h5>
-                        Anda adalah wali kelas <?= esc($kelas_perwalian['nama_rombel']) ?>. 
+                        Anda adalah wali kelas <?= esc($kelas_perwalian['nama_rombel']) ?>.
                         Menampilkan semua jurnal Anda dan jurnal guru lain untuk kelas ini.
                     </div>
                 <?php endif; ?>
-                
+
                 <?php if (session()->getFlashdata('success')): ?>
                     <div class="alert alert-success">
                         <?= session()->getFlashdata('success') ?>
@@ -164,64 +41,64 @@
                         <?= session()->getFlashdata('error') ?>
                     </div>
                 <?php endif; ?>
-                
+
                 <!-- Mobile Card View -->
                 <div class="mobile-card-view">
                     <?php if (!empty($jurnals)): ?>
                         <?php foreach ($jurnals as $j): ?>
-                        <div class="jurnal-card">
-                            <div class="jurnal-card-header">
-                                <div>
-                                    <strong>#<?= $j['id'] ?></strong>
-                                    <div class="text-muted" style="font-size: 0.875rem;"><?= $j['tanggal'] ?></div>
+                            <div class="jurnal-card">
+                                <div class="jurnal-card-header">
+                                    <div>
+                                        <strong>#<?= $j['id'] ?></strong>
+                                        <div class="text-muted" style="font-size: 0.875rem;"><?= $j['tanggal'] ?></div>
+                                    </div>
+                                    <div>
+                                        <?php if ($j['status'] == 'published'): ?>
+                                            <span class="badge bg-success">Published</span>
+                                        <?php else: ?>
+                                            <span class="badge bg-warning">Draft</span>
+                                        <?php endif; ?>
+                                    </div>
                                 </div>
-                                <div>
-                                    <?php if ($j['status'] == 'published'): ?>
-                                        <span class="badge bg-success">Published</span>
-                                    <?php else: ?>
-                                        <span class="badge bg-warning">Draft</span>
+                                <div class="jurnal-card-body">
+                                    <div class="jurnal-info-row">
+                                        <div class="jurnal-info-label">Kelas:</div>
+                                        <div class="jurnal-info-value"><?= esc($j['nama_kelas']) ?> (<?= esc($j['kode_kelas']) ?>)</div>
+                                    </div>
+                                    <div class="jurnal-info-row">
+                                        <div class="jurnal-info-label">Mapel:</div>
+                                        <div class="jurnal-info-value"><?= $j['nama_mapel'] ?></div>
+                                    </div>
+                                    <div class="jurnal-info-row">
+                                        <div class="jurnal-info-label">Jam Ke:</div>
+                                        <div class="jurnal-info-value"><?= $j['jam_ke'] ?></div>
+                                    </div>
+                                    <div class="jurnal-info-row">
+                                        <div class="jurnal-info-label">Materi:</div>
+                                        <div class="jurnal-info-value"><?= substr($j['materi'], 0, 50) . '...' ?></div>
+                                    </div>
+                                    <?php if (isset($is_wali_kelas) && $is_wali_kelas): ?>
+                                        <div class="jurnal-info-row">
+                                            <div class="jurnal-info-label">Guru:</div>
+                                            <div class="jurnal-info-value"><?= $j['nama_guru'] ?? 'Anda' ?></div>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="jurnal-card-footer">
+                                    <a href="<?= base_url('guru/jurnal/view/' . $j['id']) ?>" class="btn btn-info btn-sm">
+                                        <i class="fas fa-eye"></i> Lihat
+                                    </a>
+                                    <?php if (!isset($is_wali_kelas) || !$is_wali_kelas || (isset($j['user_id']) && $j['user_id'] == session()->get('user_id'))): ?>
+                                        <a href="<?= base_url('guru/jurnal/edit/' . $j['id']) ?>" class="btn btn-warning btn-sm">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </a>
+                                        <a href="<?= base_url('guru/jurnal/delete/' . $j['id']) ?>" class="btn btn-danger btn-sm"
+                                            onclick="return confirm('Apakah Anda yakin ingin menghapus jurnal ini?')">
+                                            <i class="fas fa-trash"></i> Hapus
+                                        </a>
                                     <?php endif; ?>
                                 </div>
                             </div>
-                            <div class="jurnal-card-body">
-                                <div class="jurnal-info-row">
-                                    <div class="jurnal-info-label">Kelas:</div>
-                                    <div class="jurnal-info-value"><?= esc($j['nama_kelas']) ?> (<?= esc($j['kode_kelas']) ?>)</div>
-                                </div>
-                                <div class="jurnal-info-row">
-                                    <div class="jurnal-info-label">Mapel:</div>
-                                    <div class="jurnal-info-value"><?= $j['nama_mapel'] ?></div>
-                                </div>
-                                <div class="jurnal-info-row">
-                                    <div class="jurnal-info-label">Jam Ke:</div>
-                                    <div class="jurnal-info-value"><?= $j['jam_ke'] ?></div>
-                                </div>
-                                <div class="jurnal-info-row">
-                                    <div class="jurnal-info-label">Materi:</div>
-                                    <div class="jurnal-info-value"><?= substr($j['materi'], 0, 50) . '...' ?></div>
-                                </div>
-                                <?php if (isset($is_wali_kelas) && $is_wali_kelas): ?>
-                                    <div class="jurnal-info-row">
-                                        <div class="jurnal-info-label">Guru:</div>
-                                        <div class="jurnal-info-value"><?= $j['nama_guru'] ?? 'Anda' ?></div>
-                                    </div>
-                                <?php endif; ?>
-                            </div>
-                            <div class="jurnal-card-footer">
-                                <a href="<?= base_url('guru/jurnal/view/' . $j['id']) ?>" class="btn btn-info btn-sm">
-                                    <i class="fas fa-eye"></i> Lihat
-                                </a>
-                                <?php if (!isset($is_wali_kelas) || !$is_wali_kelas || (isset($j['user_id']) && $j['user_id'] == session()->get('user_id'))): ?>
-                                    <a href="<?= base_url('guru/jurnal/edit/' . $j['id']) ?>" class="btn btn-warning btn-sm">
-                                        <i class="fas fa-edit"></i> Edit
-                                    </a>
-                                    <a href="<?= base_url('guru/jurnal/delete/' . $j['id']) ?>" class="btn btn-danger btn-sm" 
-                                       onclick="return confirm('Apakah Anda yakin ingin menghapus jurnal ini?')">
-                                        <i class="fas fa-trash"></i> Hapus
-                                    </a>
-                                <?php endif; ?>
-                            </div>
-                        </div>
                         <?php endforeach; ?>
                     <?php else: ?>
                         <div class="text-center text-muted py-4">
@@ -230,7 +107,7 @@
                         </div>
                     <?php endif; ?>
                 </div>
-                
+
                 <!-- Desktop Table View -->
                 <div class="desktop-table-view">
                     <div class="table-responsive">
@@ -253,38 +130,38 @@
                             <tbody>
                                 <?php if (!empty($jurnals)): ?>
                                     <?php foreach ($jurnals as $j): ?>
-                                    <tr>
-                                        <td><?= $j['id'] ?></td>
-                                        <td><?= $j['tanggal'] ?></td>
-                                        <td><?= esc($j['nama_kelas']) ?> (<?= esc($j['kode_kelas']) ?>)</td>
-                                        <td><?= $j['nama_mapel'] ?></td>
-                                        <td><?= $j['jam_ke'] ?></td>
-                                        <td><?= substr($j['materi'], 0, 50) . '...' ?></td>
-                                        <?php if (isset($is_wali_kelas) && $is_wali_kelas): ?>
-                                            <td><?= $j['nama_guru'] ?? 'Anda' ?></td>
-                                        <?php endif; ?>
-                                        <td>
-                                            <?php if ($j['status'] == 'published'): ?>
-                                                <span class="badge bg-success">Published</span>
-                                            <?php else: ?>
-                                                <span class="badge bg-warning">Draft</span>
+                                        <tr>
+                                            <td><?= $j['id'] ?></td>
+                                            <td><?= $j['tanggal'] ?></td>
+                                            <td><?= esc($j['nama_kelas']) ?> (<?= esc($j['kode_kelas']) ?>)</td>
+                                            <td><?= $j['nama_mapel'] ?></td>
+                                            <td><?= $j['jam_ke'] ?></td>
+                                            <td><?= substr($j['materi'], 0, 50) . '...' ?></td>
+                                            <?php if (isset($is_wali_kelas) && $is_wali_kelas): ?>
+                                                <td><?= $j['nama_guru'] ?? 'Anda' ?></td>
                                             <?php endif; ?>
-                                        </td>
-                                        <td>
-                                            <a href="<?= base_url('guru/jurnal/view/' . $j['id']) ?>" class="btn btn-info btn-sm">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            <?php if (!isset($is_wali_kelas) || !$is_wali_kelas || (isset($j['user_id']) && $j['user_id'] == session()->get('user_id'))): ?>
-                                                <a href="<?= base_url('guru/jurnal/edit/' . $j['id']) ?>" class="btn btn-warning btn-sm">
-                                                    <i class="fas fa-edit"></i>
+                                            <td>
+                                                <?php if ($j['status'] == 'published'): ?>
+                                                    <span class="badge bg-success">Published</span>
+                                                <?php else: ?>
+                                                    <span class="badge bg-warning">Draft</span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td>
+                                                <a href="<?= base_url('guru/jurnal/view/' . $j['id']) ?>" class="btn btn-info btn-sm">
+                                                    <i class="fas fa-eye"></i>
                                                 </a>
-                                                <a href="<?= base_url('guru/jurnal/delete/' . $j['id']) ?>" class="btn btn-danger btn-sm" 
-                                                   onclick="return confirm('Apakah Anda yakin ingin menghapus jurnal ini?')">
-                                                    <i class="fas fa-trash"></i>
-                                                </a>
-                                            <?php endif; ?>
-                                        </td>
-                                    </tr>
+                                                <?php if (!isset($is_wali_kelas) || !$is_wali_kelas || (isset($j['user_id']) && $j['user_id'] == session()->get('user_id'))): ?>
+                                                    <a href="<?= base_url('guru/jurnal/edit/' . $j['id']) ?>" class="btn btn-warning btn-sm">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <a href="<?= base_url('guru/jurnal/delete/' . $j['id']) ?>" class="btn btn-danger btn-sm"
+                                                        onclick="return confirm('Apakah Anda yakin ingin menghapus jurnal ini?')">
+                                                        <i class="fas fa-trash"></i>
+                                                    </a>
+                                                <?php endif; ?>
+                                            </td>
+                                        </tr>
                                     <?php endforeach; ?>
                                 <?php endif; ?>
                             </tbody>
@@ -297,21 +174,12 @@
         <!-- /.card -->
     </div>
 </div>
+<?= $this->endSection() ?>
 
-<!-- DataTables -->
-<link rel="stylesheet" href="<?= base_url('AdminLTE/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css') ?>">
-<link rel="stylesheet" href="<?= base_url('AdminLTE/plugins/datatables-responsive/css/responsive.bootstrap4.min.css') ?>">
+<?= $this->section('scripts') ?>
 <script src="<?= base_url('AdminLTE/plugins/datatables/jquery.dataTables.min.js') ?>"></script>
 <script src="<?= base_url('AdminLTE/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js') ?>"></script>
 <script src="<?= base_url('AdminLTE/plugins/datatables-responsive/js/dataTables.responsive.min.js') ?>"></script>
 <script src="<?= base_url('AdminLTE/plugins/datatables-responsive/js/responsive.bootstrap4.min.js') ?>"></script>
-
-<script>
-  $(function () {
-    $("#jurnal-table").DataTable({
-      "responsive": true, "lengthChange": true, "autoWidth": false,
-      "order": [[ 1, "desc" ]]
-    });
-  });
-</script>
+<script src="<?= base_url('assets/js/guru-jurnal.js') ?>"></script>
 <?= $this->endSection() ?>
