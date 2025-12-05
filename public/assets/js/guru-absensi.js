@@ -158,14 +158,14 @@ var GuruAbsensi = {
                         position: 'top',
                         labels: {
                             usePointStyle: true,
-                            padding: 15,
-                            font: { size: 12, weight: 'bold' }
+                            padding: window.innerWidth < 768 ? 10 : 15,
+                            font: { size: window.innerWidth < 768 ? 10 : 12, weight: 'bold' }
                         }
                     },
                     tooltip: {
                         backgroundColor: '#1E293B',
-                        titleFont: { family: "'Outfit', sans-serif", size: 13 },
-                        bodyFont: { family: "'Inter', sans-serif", size: 12 },
+                        titleFont: { family: "'Outfit', sans-serif", size: window.innerWidth < 768 ? 11 : 13 },
+                        bodyFont: { family: "'Inter', sans-serif", size: window.innerWidth < 768 ? 10 : 12 },
                         cornerRadius: 8,
                         padding: 12,
                         callbacks: {
@@ -188,14 +188,15 @@ var GuruAbsensi = {
                         display: true,
                         position: 'left',
                         title: {
-                            display: true,
-                            text: 'Jumlah Siswa (Bar Chart)',
-                            font: { size: 11, weight: 'bold' }
+                            display: window.innerWidth >= 768,
+                            text: 'Jumlah Siswa (Bar)',
+                            font: { size: window.innerWidth < 768 ? 9 : 11, weight: 'bold' }
                         },
                         beginAtZero: true,
                         ticks: {
                             stepSize: 1,
-                            padding: 10
+                            padding: 10,
+                            font: { size: window.innerWidth < 768 ? 9 : 11 }
                         },
                         grid: {
                             borderDash: [2, 4],
@@ -208,18 +209,24 @@ var GuruAbsensi = {
                         display: true,
                         position: 'right',
                         title: {
-                            display: true,
-                            text: 'Total Diinput (Line Chart)',
-                            font: { size: 11, weight: 'bold' }
+                            display: window.innerWidth >= 768,
+                            text: 'Total Diinput (Line)',
+                            font: { size: window.innerWidth < 768 ? 9 : 11, weight: 'bold' }
                         },
                         beginAtZero: true,
                         grid: {
                             drawOnChartArea: false
+                        },
+                        ticks: {
+                            font: { size: window.innerWidth < 768 ? 9 : 11 }
                         }
                     },
                     x: {
                         grid: {
                             display: false
+                        },
+                        ticks: {
+                            font: { size: window.innerWidth < 768 ? 8 : 11 }
                         }
                     }
                 }

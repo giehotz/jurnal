@@ -86,14 +86,14 @@
                 </div>
 
                 <!-- Grafik Absensi -->
-                <div class="row mb-8">
+                <div class="row mb-4">
                     <div class="col-12">
                         <div class="card">
                             <div class="card-header">
                                 <h3 class="card-title">Grafik Rekapitulasi Absensi per Hari</h3>
                             </div>
-                            <div class="card-body">
-                                <canvas id="absensiChart" height="100"></canvas>
+                            <div class="card-body" style="position: relative; height: 400px;">
+                                <canvas id="absensiChart"></canvas>
                             </div>
                         </div>
                     </div>
@@ -227,6 +227,19 @@
             if (e.date) {
                 $('#end_date').val(e.date.format('YYYY-MM-DD'));
             }
+        });
+
+        // Handle window resize untuk chart responsiveness
+        var resizeTimer;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(function() {
+                if (window.Chart && window.Chart.helpers.each) {
+                    window.Chart.helpers.each(Chart.instances, function(instance) {
+                        instance.resize();
+                    });
+                }
+            }, 250);
         });
     });
 </script>
