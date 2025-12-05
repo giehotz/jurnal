@@ -115,15 +115,15 @@ class Profile extends BaseController
         $removePicture = $this->request->getPost('remove_picture');
         $removeBanner = $this->request->getPost('remove_banner');
 
+        // Handle profile picture removal and upload
         if ($removePicture == '1') {
             // Hapus foto profil lama jika ada dan bukan foto default
             if ($profilePicture && $profilePicture !== 'default.png' && file_exists(ROOTPATH . 'public/uploads/profile_pictures/' . $profilePicture)) {
                 unlink(ROOTPATH . 'public/uploads/profile_pictures/' . $profilePicture);
             }
             $profilePicture = 'default.png';
-        } 
-        // Jika ada data crop (base64) dari JS, simpan sebagai file
-        else if (!empty($croppedData)) {
+        } else if (!empty($croppedData)) {
+            // Jika ada data crop (base64) dari JS, simpan sebagai file
             // Format: data:image/png;base64,AAA...
             if (preg_match('/^data:image\/(\w+);base64,/', $croppedData, $type)) {
                 $data = substr($croppedData, strpos($croppedData, ',') + 1);
@@ -141,53 +141,7 @@ class Profile extends BaseController
                 file_put_contents($savePath, $data);
                 $profilePicture = $newName;
             }
-        }
-        // Handle banner removal
-        if ($removeBanner == '1') {
-            if ($banner && file_exists(ROOTPATH . 'public/uploads/profile_banners/' . $banner)) {
-                unlink(ROOTPATH . 'public/uploads/profile_banners/' . $banner);
-            }
-            $banner = null;
-        } else {
-            // If there is cropped banner data (base64)
-            if (!empty($croppedBannerData)) {
-                if (preg_match('/^data:image\/(\w+);base64,/', $croppedBannerData, $type)) {
-                    $dataBanner = substr($croppedBannerData, strpos($croppedBannerData, ',') + 1);
-                    $dataBanner = base64_decode($dataBanner);
-                    $extBanner = strtolower($type[1]) === 'jpeg' ? 'jpg' : strtolower($type[1]);
-
-                    // remove old banner
-                    if ($banner && file_exists(ROOTPATH . 'public/uploads/profile_banners/' . $banner)) {
-                        unlink(ROOTPATH . 'public/uploads/profile_banners/' . $banner);
-                    }
-
-                    // ensure directory exists
-                    if (!is_dir(ROOTPATH . 'public/uploads/profile_banners/')) {
-                        mkdir(ROOTPATH . 'public/uploads/profile_banners/', 0755, true);
-                    }
-
-                    $newBannerName = bin2hex(random_bytes(8)) . '.' . $extBanner;
-                    $saveBannerPath = ROOTPATH . 'public/uploads/profile_banners/' . $newBannerName;
-                    file_put_contents($saveBannerPath, $dataBanner);
-                    $banner = $newBannerName;
-                }
-            }
-            // fallback: normal file upload for banner
-            else if ($bannerFile && $bannerFile->isValid() && !$bannerFile->hasMoved()) {
-                if ($banner && file_exists(ROOTPATH . 'public/uploads/profile_banners/' . $banner)) {
-                    unlink(ROOTPATH . 'public/uploads/profile_banners/' . $banner);
-                }
-                if (!is_dir(ROOTPATH . 'public/uploads/profile_banners/')) {
-                    mkdir(ROOTPATH . 'public/uploads/profile_banners/', 0755, true);
-                }
-                $newBannerName = $bannerFile->getRandomName();
-                $bannerFile->move(ROOTPATH . 'public/uploads/profile_banners/', $newBannerName);
-                $banner = $newBannerName;
-            }
-        }
-
-        // Handle profile picture upload
-        if ($file && $file->isValid() && !$file->hasMoved()) {
+        } else if ($file && $file->isValid() && !$file->hasMoved()) {
             // Hapus foto profil lama jika ada dan bukan foto default
             if ($profilePicture && $profilePicture !== 'default.png' && file_exists(ROOTPATH . 'public/uploads/profile_pictures/' . $profilePicture)) {
                 unlink(ROOTPATH . 'public/uploads/profile_pictures/' . $profilePicture);
@@ -198,6 +152,47 @@ class Profile extends BaseController
             // Pindahkan file ke folder uploads
             $file->move(ROOTPATH . 'public/uploads/profile_pictures/', $newName);
             $profilePicture = $newName;
+        }
+
+        // Handle banner removal and upload
+        if ($removeBanner == '1') {
+            if ($banner && file_exists(ROOTPATH . 'public/uploads/profile_banners/' . $banner)) {
+                unlink(ROOTPATH . 'public/uploads/profile_banners/' . $banner);
+            }
+            $banner = null;
+        } else if (!empty($croppedBannerData)) {
+            // If there is cropped banner data (base64)
+            if (preg_match('/^data:image\/(\w+);base64,/', $croppedBannerData, $type)) {
+                $dataBanner = substr($croppedBannerData, strpos($croppedBannerData, ',') + 1);
+                $dataBanner = base64_decode($dataBanner);
+                $extBanner = strtolower($type[1]) === 'jpeg' ? 'jpg' : strtolower($type[1]);
+
+                // remove old banner
+                if ($banner && file_exists(ROOTPATH . 'public/uploads/profile_banners/' . $banner)) {
+                    unlink(ROOTPATH . 'public/uploads/profile_banners/' . $banner);
+                }
+
+                // ensure directory exists
+                if (!is_dir(ROOTPATH . 'public/uploads/profile_banners/')) {
+                    mkdir(ROOTPATH . 'public/uploads/profile_banners/', 0755, true);
+                }
+
+                $newBannerName = bin2hex(random_bytes(8)) . '.' . $extBanner;
+                $saveBannerPath = ROOTPATH . 'public/uploads/profile_banners/' . $newBannerName;
+                file_put_contents($saveBannerPath, $dataBanner);
+                $banner = $newBannerName;
+            }
+        } else if ($bannerFile && $bannerFile->isValid() && !$bannerFile->hasMoved()) {
+            // fallback: normal file upload for banner
+            if ($banner && file_exists(ROOTPATH . 'public/uploads/profile_banners/' . $banner)) {
+                unlink(ROOTPATH . 'public/uploads/profile_banners/' . $banner);
+            }
+            if (!is_dir(ROOTPATH . 'public/uploads/profile_banners/')) {
+                mkdir(ROOTPATH . 'public/uploads/profile_banners/', 0755, true);
+            }
+            $newBannerName = $bannerFile->getRandomName();
+            $bannerFile->move(ROOTPATH . 'public/uploads/profile_banners/', $newBannerName);
+            $banner = $newBannerName;
         }
 
         // Data untuk diupdate
