@@ -864,11 +864,14 @@ if (profileForm) {
                 const fileName = 'banner_' + Date.now() + '.' + ext;
                 const bannerFile = dataURLtoFile(croppedBannerVal, fileName);
                 if (bannerFile) {
+                    console.log('Banner file created:', bannerFile.name, bannerFile.size, bannerFile.type);
                     fd.set('banner_image', bannerFile);
                 }
             } catch (err) {
                 console.error('Failed to convert cropped banner to file', err);
             }
+
+            console.log('FormData keys:', Array.from(fd.keys()));
 
             // send via fetch
             fetch(profileForm.action, {
@@ -876,6 +879,7 @@ if (profileForm) {
                 body: fd,
                 credentials: 'same-origin'
             }).then(function(response) {
+                console.log('Response status:', response.status, 'redirected:', response.redirected);
                 if (response.redirected) {
                     window.location.href = response.url;
                 } else if (response.ok) {
@@ -885,7 +889,7 @@ if (profileForm) {
                     alert('Gagal mengunggah banner. Silakan coba lagi.');
                 }
             }).catch(function(err) {
-                console.error(err);
+                console.error('Fetch error:', err);
                 alert('Terjadi kesalahan saat mengunggah banner.');
             });
         }
