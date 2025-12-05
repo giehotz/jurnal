@@ -185,7 +185,9 @@ class Profile extends BaseController
                 $banner = $newBannerName;
             }
         }
-        else if ($file && $file->isValid() && !$file->hasMoved()) {
+
+        // Handle profile picture upload
+        if ($file && $file->isValid() && !$file->hasMoved()) {
             // Hapus foto profil lama jika ada dan bukan foto default
             if ($profilePicture && $profilePicture !== 'default.png' && file_exists(ROOTPATH . 'public/uploads/profile_pictures/' . $profilePicture)) {
                 unlink(ROOTPATH . 'public/uploads/profile_pictures/' . $profilePicture);
