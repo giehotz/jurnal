@@ -17,6 +17,7 @@ class UserModel extends Model
         'mata_pelajaran', 
         'is_active',
         'profile_picture',
+        'banner',
         'tanggal_lahir',
         'alamat',
         'no_telepon'
