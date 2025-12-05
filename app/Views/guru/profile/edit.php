@@ -824,14 +824,22 @@ if (document.getElementById('remove_banner_btn')) {
     document.getElementById('remove_banner_btn').addEventListener('click', handleRemoveBanner);
 }
 
-// Intercept form submit to convert cropped banner base64 into a binary File
+// Intercept form submit to handle banner file upload via FormData
 const profileForm = document.querySelector('form[action="<?= base_url('guru/profile/update') ?>"]');
 if (profileForm) {
     profileForm.addEventListener('submit', function(e) {
-        // If there is cropped banner base64 data, convert to File and send via FormData
         const croppedBannerVal = document.getElementById('croppedBannerData').value;
-        if (croppedBannerVal && croppedBannerVal.trim().length > 100) {
+        const bannerImageInput = document.getElementById('banner_image');
+        
+        // Check if there's either cropped data or a file selected in banner_image input
+        const hasCroppedBanner = croppedBannerVal && croppedBannerVal.trim().length > 100;
+        const hasBannerFile = bannerImageInput && bannerImageInput.files && bannerImageInput.files.length > 0;
+        
+        console.log('Form submit - hasCroppedBanner:', hasCroppedBanner, 'hasBannerFile:', hasBannerFile, 'croppedBannerVal length:', croppedBannerVal ? croppedBannerVal.length : 0);
+        
+        if (hasCroppedBanner) {
             e.preventDefault();
+            console.log('Converting cropped banner to File...');
 
             // helper to convert dataURL to File
             function dataURLtoFile(dataurl, filename) {
@@ -893,7 +901,7 @@ if (profileForm) {
                 alert('Terjadi kesalahan saat mengunggah banner.');
             });
         }
-        // If no cropped banner data, submit form normally
+        // If no cropped banner, form submits normally
     });
 }
 </script>
