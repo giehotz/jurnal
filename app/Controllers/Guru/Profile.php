@@ -102,10 +102,13 @@ class Profile extends BaseController
         // Proses upload foto profil
         $profilePicture = $user['profile_picture'] ?? '';
         $file = $this->request->getFile('profile_picture');
-        
+
+        // Cek apakah ada cropped image (base64) dari frontend
+        $croppedData = $this->request->getPost('cropped_image_data');
+
         // Cek apakah user ingin menghapus foto
         $removePicture = $this->request->getPost('remove_picture');
-        
+
         if ($removePicture == '1') {
             // Hapus foto profil lama jika ada dan bukan foto default
             if ($profilePicture && $profilePicture !== 'default.png' && file_exists(ROOTPATH . 'public/uploads/profile_pictures/' . $profilePicture)) {
@@ -113,6 +116,26 @@ class Profile extends BaseController
             }
             $profilePicture = 'default.png';
         } 
+        // Jika ada data crop (base64) dari JS, simpan sebagai file
+        else if (!empty($croppedData)) {
+            // Format: data:image/png;base64,AAA...
+            if (preg_match('/^data:image\/(\w+);base64,/', $croppedData, $type)) {
+                $data = substr($croppedData, strpos($croppedData, ',') + 1);
+                $data = base64_decode($data);
+                $ext = strtolower($type[1]) === 'jpeg' ? 'jpg' : strtolower($type[1]);
+
+                // Hapus foto lama
+                if ($profilePicture && $profilePicture !== 'default.png' && file_exists(ROOTPATH . 'public/uploads/profile_pictures/' . $profilePicture)) {
+                    unlink(ROOTPATH . 'public/uploads/profile_pictures/' . $profilePicture);
+                }
+
+                // Save new file
+                $newName = bin2hex(random_bytes(8)) . '.' . $ext;
+                $savePath = ROOTPATH . 'public/uploads/profile_pictures/' . $newName;
+                file_put_contents($savePath, $data);
+                $profilePicture = $newName;
+            }
+        }
         else if ($file && $file->isValid() && !$file->hasMoved()) {
             // Hapus foto profil lama jika ada dan bukan foto default
             if ($profilePicture && $profilePicture !== 'default.png' && file_exists(ROOTPATH . 'public/uploads/profile_pictures/' . $profilePicture)) {
