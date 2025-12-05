@@ -82,7 +82,8 @@ class Profile extends BaseController
             'tanggal_lahir' => 'permit_empty|valid_date',
             'alamat' => 'permit_empty|max_length[255]',
             'no_telepon' => 'permit_empty|max_length[20]',
-            'profile_picture' => 'permit_empty|mime_in[image/jpg,image/jpeg,image/png]|max_size[profile_picture,2048]'
+            'profile_picture' => 'permit_empty|mime_in[image/jpg,image/jpeg,image/png]|max_size[profile_picture,2048]',
+            'banner_image' => 'permit_empty|mime_in[image/jpg,image/jpeg,image/png]|max_size[banner_image,4096]'
         ];
 
         // Cek apakah email berubah
@@ -101,13 +102,18 @@ class Profile extends BaseController
 
         // Proses upload foto profil
         $profilePicture = $user['profile_picture'] ?? '';
+        // Proses banner
+        $banner = $user['banner'] ?? '';
+        $bannerFile = $this->request->getFile('banner_image');
         $file = $this->request->getFile('profile_picture');
 
         // Cek apakah ada cropped image (base64) dari frontend
         $croppedData = $this->request->getPost('cropped_image_data');
+        $croppedBannerData = $this->request->getPost('cropped_banner_data');
 
         // Cek apakah user ingin menghapus foto
         $removePicture = $this->request->getPost('remove_picture');
+        $removeBanner = $this->request->getPost('remove_banner');
 
         if ($removePicture == '1') {
             // Hapus foto profil lama jika ada dan bukan foto default
@@ -136,6 +142,48 @@ class Profile extends BaseController
                 $profilePicture = $newName;
             }
         }
+        // Handle banner removal
+        if ($removeBanner == '1') {
+            if ($banner && file_exists(ROOTPATH . 'public/uploads/profile_banners/' . $banner)) {
+                unlink(ROOTPATH . 'public/uploads/profile_banners/' . $banner);
+            }
+            $banner = null;
+        }
+        // If there is cropped banner data (base64)
+        else if (!empty($croppedBannerData)) {
+            if (preg_match('/^data:image\/(\w+);base64,/', $croppedBannerData, $type)) {
+                $dataBanner = substr($croppedBannerData, strpos($croppedBannerData, ',') + 1);
+                $dataBanner = base64_decode($dataBanner);
+                $extBanner = strtolower($type[1]) === 'jpeg' ? 'jpg' : strtolower($type[1]);
+
+                // remove old banner
+                if ($banner && file_exists(ROOTPATH . 'public/uploads/profile_banners/' . $banner)) {
+                    unlink(ROOTPATH . 'public/uploads/profile_banners/' . $banner);
+                }
+
+                // ensure directory exists
+                if (!is_dir(ROOTPATH . 'public/uploads/profile_banners/')) {
+                    mkdir(ROOTPATH . 'public/uploads/profile_banners/', 0755, true);
+                }
+
+                $newBannerName = bin2hex(random_bytes(8)) . '.' . $extBanner;
+                $saveBannerPath = ROOTPATH . 'public/uploads/profile_banners/' . $newBannerName;
+                file_put_contents($saveBannerPath, $dataBanner);
+                $banner = $newBannerName;
+            }
+        }
+        // fallback: normal file upload for banner
+        else if ($bannerFile && $bannerFile->isValid() && !$bannerFile->hasMoved()) {
+            if ($banner && file_exists(ROOTPATH . 'public/uploads/profile_banners/' . $banner)) {
+                unlink(ROOTPATH . 'public/uploads/profile_banners/' . $banner);
+            }
+            if (!is_dir(ROOTPATH . 'public/uploads/profile_banners/')) {
+                mkdir(ROOTPATH . 'public/uploads/profile_banners/', 0755, true);
+            }
+            $newBannerName = $bannerFile->getRandomName();
+            $bannerFile->move(ROOTPATH . 'public/uploads/profile_banners/', $newBannerName);
+            $banner = $newBannerName;
+        }
         else if ($file && $file->isValid() && !$file->hasMoved()) {
             // Hapus foto profil lama jika ada dan bukan foto default
             if ($profilePicture && $profilePicture !== 'default.png' && file_exists(ROOTPATH . 'public/uploads/profile_pictures/' . $profilePicture)) {
@@ -157,7 +205,8 @@ class Profile extends BaseController
             'tanggal_lahir' => $this->request->getPost('tanggal_lahir') ?: null,
             'alamat' => $this->request->getPost('alamat') ?: null,
             'no_telepon' => $this->request->getPost('no_telepon') ?: null,
-            'profile_picture' => $profilePicture
+            'profile_picture' => $profilePicture,
+            'banner' => $banner
         ];
 
         // Update data user
@@ -167,7 +216,8 @@ class Profile extends BaseController
                 'nama' => $data['nama'],
                 'nip' => $data['nip'],
                 'email' => $data['email'],
-                'profile_picture' => $data['profile_picture'] // Tambahkan ini untuk memperbarui foto profil di session
+                'profile_picture' => $data['profile_picture'], // Tambahkan ini untuk memperbarui foto profil di session
+                'banner' => $data['banner'] ?? null
             ]);
             
             session()->setFlashdata('success', 'Profil berhasil diperbarui.');

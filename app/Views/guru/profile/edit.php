@@ -408,7 +408,9 @@
     <form action="<?= base_url('guru/profile/update') ?>" method="post" enctype="multipart/form-data">
         <?= csrf_field() ?>
         <input type="hidden" id="remove_picture" name="remove_picture" value="0">
-        <input type="hidden" id="croppedImageData" name="cropped_image_data" value="">
+            <input type="hidden" id="croppedImageData" name="cropped_image_data" value="">
+            <input type="hidden" id="remove_banner" name="remove_banner" value="0">
+            <input type="hidden" id="croppedBannerData" name="cropped_banner_data" value="">
 
         <!-- Alerts -->
         <?php if (session()->getFlashdata('success')): ?>
@@ -468,6 +470,33 @@
         </div>
 
         <!-- Foto Profil Section -->
+        <!-- Banner Section -->
+        <div class="form-card">
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-image"></i> Banner Profil
+                </h3>
+
+                <div class="picture-preview-box banner-preview <?= (!empty($user['banner'])) ? 'has-image' : '' ?>" style="padding:0;">
+                    <?php if (!empty($user['banner'])): ?>
+                        <img id="bannerPreviewImage" src="<?= base_url('uploads/profile_banners/' . $user['banner']) ?>" alt="Banner Preview" style="width:100%;height:auto;border-radius:8px;max-height:240px;object-fit:cover;">
+                    <?php else: ?>
+                        <div id="bannerPreviewPlaceholder" style="background: linear-gradient(135deg, #f5e105ff 0%, #14d209ff 100%);height:140px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;">Banner Default</div>
+                    <?php endif; ?>
+                </div>
+
+                <input type="file" class="custom-file-input" id="banner_image" name="banner_image" accept="image/*">
+                <label for="banner_image" class="file-input-label">
+                    <i class="fas fa-cloud-upload-alt"></i> Pilih Banner
+                </label>
+
+                <?php if (!empty($user['banner'])): ?>
+                    <button type="button" class="btn btn-delete" id="remove_banner_btn" style="margin-left: 10px;">
+                        <i class="fas fa-trash"></i> Hapus Banner
+                    </button>
+                <?php endif; ?>
+            </div>
+        </div>
         <div class="form-card">
             <div class="form-section">
                 <h3 class="section-title">
@@ -535,6 +564,36 @@
             </div>
         </div>
     </form>
+</div>
+
+<!-- Crop Modal for Banner -->
+<div class="crop-modal-overlay" id="cropBannerModalOverlay">
+    <div class="crop-modal">
+        <div class="crop-modal-header">
+            <h2><i class="fas fa-crop"></i> Crop Banner</h2>
+            <button type="button" class="close-btn" id="closeBannerCropModal">&times;</button>
+        </div>
+        <div class="crop-modal-body">
+            <div class="crop-tools">
+                <button type="button" class="crop-tool-btn" id="bannerRotateCW">
+                    <i class="fas fa-redo"></i> Putar Kanan
+                </button>
+                <button type="button" class="crop-tool-btn" id="bannerRotateCCW">
+                    <i class="fas fa-undo"></i> Putar Kiri
+                </button>
+                <button type="button" class="crop-tool-btn" id="bannerResetCrop">
+                    <i class="fas fa-sync"></i> Reset
+                </button>
+            </div>
+            <div class="crop-container">
+                <img id="cropImageBanner" src="" alt="Crop banner image">
+            </div>
+        </div>
+        <div class="crop-modal-footer">
+            <button type="button" class="btn-crop-cancel" id="cancelBannerCrop">Batal</button>
+            <button type="button" class="btn-crop-confirm" id="confirmBannerCrop">Gunakan Banner Ini</button>
+        </div>
+    </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
@@ -661,6 +720,108 @@ function handleRemovePicture(e) {
 // Hapus foto
 if (document.getElementById('remove_picture_btn')) {
     document.getElementById('remove_picture_btn').addEventListener('click', handleRemovePicture);
+}
+
+// Banner crop variables
+let bannerCropper;
+let selectedBannerFile;
+
+// Banner file selected -> open banner crop modal
+document.getElementById('banner_image').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    selectedBannerFile = file;
+    const reader = new FileReader();
+    reader.onload = function(event) {
+        const cropImage = document.getElementById('cropImageBanner');
+        cropImage.src = event.target.result;
+        document.getElementById('cropBannerModalOverlay').classList.add('show');
+
+        if (bannerCropper) bannerCropper.destroy();
+        bannerCropper = new Cropper(cropImage, {
+            aspectRatio: 3.2,
+            viewMode: 1,
+            autoCropArea: 1,
+            responsive: true,
+            restore: true,
+            guides: true,
+            center: true,
+            highlight: true,
+            cropBoxMovable: true,
+            cropBoxResizable: true,
+            toggleDragModeOnDblclick: true
+        });
+    };
+    reader.readAsDataURL(file);
+});
+
+// Banner modal controls
+document.getElementById('closeBannerCropModal').addEventListener('click', function() {
+    document.getElementById('cropBannerModalOverlay').classList.remove('show');
+    if (bannerCropper) { bannerCropper.destroy(); bannerCropper = null; }
+    document.getElementById('banner_image').value = '';
+});
+document.getElementById('cancelBannerCrop').addEventListener('click', function() {
+    document.getElementById('cropBannerModalOverlay').classList.remove('show');
+    if (bannerCropper) { bannerCropper.destroy(); bannerCropper = null; }
+    document.getElementById('banner_image').value = '';
+});
+
+document.getElementById('bannerRotateCW').addEventListener('click', function(e){ e.preventDefault(); if (bannerCropper) bannerCropper.rotate(45); });
+document.getElementById('bannerRotateCCW').addEventListener('click', function(e){ e.preventDefault(); if (bannerCropper) bannerCropper.rotate(-45); });
+document.getElementById('bannerResetCrop').addEventListener('click', function(e){ e.preventDefault(); if (bannerCropper) bannerCropper.reset(); });
+
+document.getElementById('confirmBannerCrop').addEventListener('click', function(e){
+    e.preventDefault();
+    if (!bannerCropper) return;
+    const canvas = bannerCropper.getCroppedCanvas({ width: 1200 });
+    const croppedData = canvas.toDataURL();
+
+    // Set preview
+    const bannerPrevImg = document.getElementById('bannerPreviewImage');
+    if (bannerPrevImg) {
+        bannerPrevImg.src = croppedData;
+    } else {
+        const placeholder = document.getElementById('bannerPreviewPlaceholder');
+        if (placeholder) {
+            const parent = placeholder.parentElement;
+            parent.innerHTML = '<img id="bannerPreviewImage" src="' + croppedData + '" alt="Banner Preview" style="width:100%;height:auto;border-radius:8px;max-height:240px;object-fit:cover;">';
+        }
+    }
+
+    document.getElementById('croppedBannerData').value = croppedData;
+    const removeBtn = document.getElementById('remove_banner_btn');
+    if (removeBtn) removeBtn.style.display = 'inline-flex';
+
+    document.getElementById('cropBannerModalOverlay').classList.remove('show');
+    if (bannerCropper) { bannerCropper.destroy(); bannerCropper = null; }
+});
+
+// Close banner modal when clicking outside
+document.getElementById('cropBannerModalOverlay').addEventListener('click', function(e) {
+    if (e.target === this) {
+        this.classList.remove('show');
+        if (bannerCropper) { bannerCropper.destroy(); bannerCropper = null; }
+        document.getElementById('banner_image').value = '';
+    }
+});
+
+// Remove banner
+function handleRemoveBanner(e) {
+    e.preventDefault();
+    const previewImg = document.getElementById('bannerPreviewImage');
+    const placeholder = document.getElementById('bannerPreviewPlaceholder');
+    if (previewImg) {
+        previewImg.parentElement.innerHTML = '<div id="bannerPreviewPlaceholder" style="background: linear-gradient(135deg, #f5e105ff 0%, #14d209ff 100%);height:140px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;">Banner Default</div>';
+    }
+    document.getElementById('croppedBannerData').value = '';
+    document.getElementById('remove_banner').value = '1';
+    this.style.display = 'none';
+}
+
+if (document.getElementById('remove_banner_btn')) {
+    document.getElementById('remove_banner_btn').addEventListener('click', handleRemoveBanner);
 }
 </script>
 

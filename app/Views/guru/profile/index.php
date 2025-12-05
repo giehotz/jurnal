@@ -3,7 +3,7 @@
 <?= $this->section('styles') ?>
 <style>
     .profile-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #f5e105ff 0%, #14d209ff 100%);
         border-radius: 12px;
         padding: 40px 30px;
         color: white;
@@ -131,7 +131,8 @@
 <?= $this->section('content') ?>
 <div class="container-fluid">
     <!-- Profile Header -->
-    <div class="profile-header text-center">
+    <?php $bannerFile = $user['banner'] ?? null; ?>
+    <div class="profile-header text-center" <?= !empty($bannerFile) ? 'style="background-image: linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.25)), url(' . base_url('uploads/profile_banners/' . $bannerFile) . '); background-size: cover; background-position: center;"' : '' ?> >
         <?php 
         $profilePicture = $user['profile_picture'];
         if (!empty($profilePicture) && $profilePicture !== 'default.png'): ?>
