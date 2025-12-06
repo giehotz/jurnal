@@ -138,6 +138,14 @@
                         </a>
                     </li>
 
+                    <li class="nav-item">
+                        <a href="<?= base_url('admin/kalender-pendidikan') ?>"
+                            class="nav-link <?= (isset($active_menu) && $active_menu == 'kalender_pendidikan') ? 'active' : '' ?>">
+                            <i class="nav-icon fas fa-calendar-alt"></i>
+                            <p>Kalender Pendidikan</p>
+                        </a>
+                    </li>
+
                     <li class="nav-item has-treeview <?= (isset($active_menu) && in_array($active_menu, ['settings', 'qrcode_settings', 'qrcode_list'])) ? 'menu-open' : '' ?>">
                         <a href="#" class="nav-link <?= (isset($active_menu) && in_array($active_menu, ['settings', 'qrcode_settings', 'qrcode_list'])) ? 'active' : '' ?>">
                             <i class="nav-icon fas fa-cogs"></i>
@@ -166,6 +174,13 @@
                                     class="nav-link <?= (isset($active_menu) && $active_menu == 'qrcode_list') ? 'active' : '' ?>">
                                     <i class="far fa-circle nav-icon"></i>
                                     <p>Daftar QR Code</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="<?= base_url('admin/settings/maintenance') ?>"
+                                    class="nav-link <?= (isset($active_menu) && $active_menu == 'maintenance') ? 'active' : '' ?>">
+                                    <i class="fas fa-tools nav-icon"></i>
+                                    <p>Maintenance</p>
                                 </a>
                             </li>
                         </ul>

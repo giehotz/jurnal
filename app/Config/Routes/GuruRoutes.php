@@ -16,13 +16,13 @@ function guruRoutes(RouteCollection $routes)
     // $routes->post('guru/jurnal/check-daily-attendance', 'Guru\Jurnal::checkDailyAttendance');
 
     // Guru Routes
-    $routes->group('guru', ['filter' => 'auth'], function($routes) {
+    $routes->group('guru', ['filter' => 'auth'], function ($routes) {
         // Dashboard
         $routes->get('dashboard', 'Guru\Dashboard::index');
-        
+
         // Test Helper
         $routes->get('test-helper', 'Guru\TestHelper::index');
-        
+
         // Jurnal Management
         $routes->get('jurnal', 'Guru\Jurnal::index');
         $routes->get('jurnal/create', 'Guru\Jurnal::create');
@@ -40,7 +40,7 @@ function guruRoutes(RouteCollection $routes)
         $routes->get('jurnal/export/excel', 'Guru\Jurnal::exportExcel');
         $routes->post('jurnal/export/excel', 'Guru\Jurnal::exportExcel');
         $routes->get('jurnal/pdf/(:num)', 'Guru\Jurnal::pdf/$1');
-        
+
         // Attendance Management
         $routes->get('absensi', 'Guru\AbsensiReportController::index');
         $routes->get('absensi/create', 'Guru\AbsensiInputController::create');
@@ -53,7 +53,7 @@ function guruRoutes(RouteCollection $routes)
         $routes->get('absensi/delete/(:num)', 'Guru\AbsensiInputController::delete/$1');
         $routes->post('absensi/process_export', 'Guru\AbsensiReportController::process_export');
         $routes->post('absensi/get-siswa-by-rombel', 'Guru\AbsensiViewController::getSiswaByRombel');
-        
+
         // Profile
         $routes->get('profile', 'Guru\Profile::index');
         $routes->get('profile/edit', 'Guru\Profile::edit');
@@ -72,5 +72,9 @@ function guruRoutes(RouteCollection $routes)
         $routes->get('qrcode/download/(:num)', 'Guru\QRCode::download/$1');
         $routes->get('qrcode/render/(:num)', 'Guru\QRCode::render/$1');
         $routes->get('qrcode/delete/(:num)', 'Guru\QRCode::delete/$1');
+
+        // Kalender Mengajar
+        $routes->get('kalender-mengajar', 'Guru\KalenderMengajar::index');
+        $routes->get('kalender-mengajar/detail-tanggal/(:any)', 'Guru\KalenderMengajar::detailTanggal/$1');
     });
 }

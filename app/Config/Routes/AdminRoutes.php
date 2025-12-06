@@ -130,7 +130,13 @@ function adminRoutes(RouteCollection $routes)
         $routes->get('settings/settingapps', 'Admin\Settings::settingApps');
         $routes->post('settings/save', 'Admin\Settings::save');
         $routes->get('settings/maintenance', 'Admin\Settings::maintenance');
-        $routes->post('settings/run-maintenance', 'Admin\Settings::runMaintenance');
+        $routes->match(['get', 'post'], 'settings/maintenance/backupdatabase', 'Admin\Settings::backupDatabase');
+        $routes->match(['get', 'post'], 'settings/maintenance/restoredatabase', 'Admin\Settings::restoreDatabase');
+        $routes->match(['get', 'post'], 'settings/maintenance/hapuscache', 'Admin\Settings::hapusCache');
+        $routes->get('settings/maintenance/downloadbackup/(:any)', 'Admin\Settings::downloadBackup/$1');
+        $routes->get('settings/maintenance/restorebackup/(:any)', 'Admin\Settings::confirmRestoreBackup/$1'); // Separate method for GET confirmation logic if needed, or re-use restoreDatabase with params? 
+        // Actually the view calls: restorebackup/filename. Let's map it to a specific method.
+        $routes->get('settings/maintenance/deletebackup/(:any)', 'Admin\Settings::deleteBackup/$1');
 
         // QR Code Settings
         $routes->get('qrcode/settings', 'Admin\QRCodeSettings::index');
@@ -140,6 +146,18 @@ function adminRoutes(RouteCollection $routes)
         $routes->get('qrcode/list', 'Admin\QRCodeSettings::listQRCodes');
         $routes->get('qrcode/render/(:num)', 'Admin\QRCodeSettings::renderQR/$1');
         $routes->get('qrcode/download/(:num)', 'Admin\QRCodeSettings::downloadQR/$1');
+
+        // Kalender Pendidikan
+        $routes->get('kalender-pendidikan', 'Admin\KalenderPendidikan::index');
+        $routes->get('kalender-pendidikan/create', 'Admin\KalenderPendidikan::create');
+        $routes->post('kalender-pendidikan/store', 'Admin\KalenderPendidikan::store');
+        $routes->get('kalender-pendidikan/edit/(:num)', 'Admin\KalenderPendidikan::edit/$1');
+        $routes->post('kalender-pendidikan/update/(:num)', 'Admin\KalenderPendidikan::update/$1');
+        $routes->get('kalender-pendidikan/delete/(:num)', 'Admin\KalenderPendidikan::delete/$1');
+        $routes->post('kalender-pendidikan/delete-bulk', 'Admin\KalenderPendidikan::deleteBulk');
+        $routes->post('kalender-pendidikan/import-excel', 'Admin\KalenderPendidikan::importExcel');
+        $routes->get('kalender-pendidikan/download-template', 'Admin\KalenderPendidikan::downloadTemplate');
+        $routes->post('kalender-pendidikan/publish', 'Admin\KalenderPendidikan::publish');
 
         // Guru Management
         $routes->get('guru', 'Admin\Guru::index');

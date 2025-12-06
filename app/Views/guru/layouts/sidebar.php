@@ -3,9 +3,9 @@
     <!-- Brand Logo -->
     <a href="<?= base_url('guru/dashboard') ?>" class="brand-link">
         <img src="<?= base_url('AdminLTE/dist/img/AdminLTELogo.png') ?>"
-             alt="AdminLTE Logo"
-             class="brand-image img-circle elevation-3"
-             style="opacity: .8">
+            alt="AdminLTE Logo"
+            class="brand-image img-circle elevation-3"
+            style="opacity: .8">
         <span class="brand-text font-weight-light">Jurnal Guru</span>
     </a>
 
@@ -14,7 +14,7 @@
         <!-- User Panel -->
         <div class="user-panel mt-3 pb-3 mb-3 d-flex align-items-center">
             <div class="image">
-                <?php 
+                <?php
                 $profilePicture = session()->get('profile_picture');
                 if (!empty($profilePicture) && $profilePicture !== 'default.png'): ?>
                     <img src="<?= base_url('uploads/profile_pictures/' . $profilePicture) ?>" class="img-circle elevation-2" alt="User Image">
@@ -37,15 +37,15 @@
                 <!-- Dashboard -->
                 <li class="nav-item">
                     <a href="<?= base_url('guru/dashboard') ?>"
-                       class="nav-link <?= ($active ?? '') === 'dashboard' ? 'active' : '' ?>">
+                        class="nav-link <?= ($active ?? '') === 'dashboard' ? 'active' : '' ?>">
                         <i class="nav-icon fas fa-tachometer-alt"></i>
                         <p>Dashboard</p>
                     </a>
                 </li>
- <!-- Absensi -->
+                <!-- Absensi -->
                 <li class="nav-item">
                     <a href="<?= base_url('guru/absensi') ?>"
-                       class="nav-link <?= ($active ?? '') === 'absensi' ? 'active' : '' ?>">
+                        class="nav-link <?= ($active ?? '') === 'absensi' ? 'active' : '' ?>">
                         <i class="nav-icon fas fa-clipboard-check"></i>
                         <p>Absensi Siswa</p>
                     </a>
@@ -54,32 +54,41 @@
                 <!-- Jurnal -->
                 <li class="nav-item">
                     <a href="<?= base_url('guru/jurnal') ?>"
-                       class="nav-link <?= ($active ?? '') === 'jurnal' ? 'active' : '' ?>">
+                        class="nav-link <?= ($active ?? '') === 'jurnal' ? 'active' : '' ?>">
                         <i class="nav-icon fas fa-book"></i>
                         <p>Jurnal Mengajar</p>
                     </a>
                 </li>
 
-               
+
                 <!-- QR Code -->
                 <li class="nav-item">
                     <a href="<?= base_url('guru/qrcode') ?>"
-                       class="nav-link <?= ($active ?? '') === 'qrcode' ? 'active' : '' ?>">
+                        class="nav-link <?= ($active ?? '') === 'qrcode' ? 'active' : '' ?>">
                         <i class="nav-icon fas fa-qrcode"></i>
                         <p>QR Code</p>
+                    </a>
+                </li>
+
+                <!-- Kalender -->
+                <li class="nav-item">
+                    <a href="<?= base_url('guru/kalender-mengajar') ?>"
+                        class="nav-link <?= ($active ?? '') === 'kalender_mengajar' ? 'active' : '' ?>">
+                        <i class="nav-icon fas fa-calendar-alt"></i>
+                        <p>Kalender Mengajar</p>
                     </a>
                 </li>
 
                 <!-- Profile -->
                 <li class="nav-item">
                     <a href="<?= base_url('guru/profile') ?>"
-                       class="nav-link <?= ($active ?? '') === 'profile' ? 'active' : '' ?>">
+                        class="nav-link <?= ($active ?? '') === 'profile' ? 'active' : '' ?>">
                         <i class="nav-icon fas fa-user"></i>
                         <p>Profil Saya</p>
                     </a>
                 </li>
 
-                 <li class="nav-item">
+                <li class="nav-item">
                     <a href="<?= base_url('auth/logout') ?>" class="nav-link">
                         <i class="nav-icon fas fa-sign-out-alt"></i>
                         <p>Logout</p>
