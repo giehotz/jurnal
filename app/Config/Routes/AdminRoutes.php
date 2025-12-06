@@ -12,15 +12,15 @@ use CodeIgniter\Router\RouteCollection;
 function adminRoutes(RouteCollection $routes)
 {
     // Admin Routes
-    $routes->group('admin', ['filter' => 'auth'], function($routes) {
+    $routes->group('admin', ['filter' => 'auth'], function ($routes) {
         // Dashboard
         $routes->get('dashboard', 'Admin\Dashboard::index');
-        
+
         // Profile
         $routes->get('profile', 'Admin\Profile::index');
         $routes->get('profile/edit', 'Admin\Profile::edit');
         $routes->post('profile/update', 'Admin\Profile::update');
-        
+
         // Absensi
         $routes->get('absensi', 'Admin\Absensi::index');
         $routes->get('absensi/create', 'Admin\Absensi::create');
@@ -33,13 +33,13 @@ function adminRoutes(RouteCollection $routes)
         $routes->get('absensi/debug', 'Admin\Absensi::debugRombelSiswa');
         $routes->get('absensi/export', 'Admin\Absensi::export');
         $routes->post('absensi/process_export', 'Admin\Absensi::process_export');
-        
+
         // Pindah Kelas
         $routes->get('pindah-kelas', 'Admin\PindahKelas::index');
         $routes->post('pindah-kelas/get-rombel-by-tingkat', 'Admin\PindahKelas::getRombelByTingkat');
         $routes->post('pindah-kelas/get-siswa-by-rombel', 'Admin\PindahKelas::getSiswaByRombel');
         $routes->post('pindah-kelas/move-students', 'Admin\PindahKelas::moveStudents');
-        
+
         // Class Management
         $routes->get('kelas', 'Admin\Kelas::index');
         $routes->get('kelas/create', 'Admin\Kelas::create');
@@ -48,7 +48,7 @@ function adminRoutes(RouteCollection $routes)
         $routes->get('kelas/edit/(:num)', 'Admin\Kelas::edit/$1');
         $routes->post('kelas/update/(:num)', 'Admin\Kelas::update/$1');
         $routes->get('kelas/delete/(:num)', 'Admin\Kelas::delete/$1');
-        
+
         // Rombel Management
         $routes->get('rombel', 'Admin\Rombel::index');
         $routes->get('rombel/create', 'Admin\Rombel::create');
@@ -63,7 +63,7 @@ function adminRoutes(RouteCollection $routes)
         $routes->get('rombel/download-template', 'Admin\Rombel::downloadTemplate');
         $routes->post('rombel/preview-upload/(:num)', 'Admin\Rombel::previewUpload/$1');
         $routes->post('rombel/store-upload/(:num)', 'Admin\Rombel::storeUpload/$1');
-        
+
         // Ruangan Management
         $routes->get('ruangan', 'Admin\Ruangan::index');
         $routes->get('ruangan/create', 'Admin\Ruangan::create');
@@ -71,7 +71,7 @@ function adminRoutes(RouteCollection $routes)
         $routes->get('ruangan/edit/(:num)', 'Admin\Ruangan::edit/$1');
         $routes->post('ruangan/update/(:num)', 'Admin\Ruangan::update/$1');
         $routes->get('ruangan/delete/(:num)', 'Admin\Ruangan::delete/$1');
-        
+
         // Auto-Route Manager
         $routes->get('autoroute', 'Admin\AutoRouteManager::index');
         $routes->post('autoroute/update-toggle', 'Admin\AutoRouteManager::updateToggle');
@@ -81,7 +81,7 @@ function adminRoutes(RouteCollection $routes)
         $routes->get('autoroute/toggle-allowed/(:num)', 'Admin\AutoRouteManager::toggleAllowed/$1');
         $routes->get('autoroute/logs', 'Admin\AutoRouteManager::logs');
         $routes->get('autoroute/clear-logs', 'Admin\AutoRouteManager::clearLogs');
-        
+
         // Monitoring Jurnal
         $routes->get('monitoring', 'Admin\Monitoring::index');
         $routes->get('monitoring/detail/(:num)', 'Admin\Monitoring::detail/$1');
@@ -91,7 +91,7 @@ function adminRoutes(RouteCollection $routes)
         $routes->get('monitoring/detail/(:num)/export/excel', 'Admin\Monitoring::exportDetailToExcel/$1');
         $routes->get('monitoring/export/excel', 'Admin\Monitoring::exportToExcel');
         $routes->get('monitoring/exportToExcel', 'Admin\Monitoring::exportToExcel');
-        
+
         // User Management
         $routes->get('users', 'Admin\UserManagement::index');
         $routes->get('user-management', 'Admin\UserManagement::index');
@@ -107,7 +107,7 @@ function adminRoutes(RouteCollection $routes)
         $routes->post('users/importUsersFromExcel', 'Admin\UserManagement::importUsersFromExcel');
         $routes->get('users/downloadTemplate', 'Admin\UserManagement::downloadTemplate');
         $routes->get('users/download_template', 'Admin\UserManagement::downloadTemplate');
-        
+
         // Mapel Management
         $routes->get('mapel', 'Admin\Mapel::index');
         $routes->get('mapel/create', 'Admin\Mapel::create');
@@ -119,12 +119,12 @@ function adminRoutes(RouteCollection $routes)
         $routes->get('mapel/upload', 'Admin\Mapel::upload');
         $routes->post('mapel/import', 'Admin\Mapel::import');
         $routes->get('mapel/download-template', 'Admin\Mapel::downloadTemplate');
-        
+
         // Export/Import
         $routes->get('export', 'Admin\Export::index');
         $routes->get('export/generate-pdf', 'Admin\Export::generatePDF');
         $routes->get('export/generate-excel', 'Admin\Export::generateExcel');
-        
+
         // Settings
         $routes->get('settings', 'Admin\Settings::index');
         $routes->get('settings/settingapps', 'Admin\Settings::settingApps');
@@ -137,7 +137,10 @@ function adminRoutes(RouteCollection $routes)
         $routes->post('qrcode/settings/update', 'Admin\QRCodeSettings::update');
         $routes->post('qrcode/settings/reset', 'Admin\QRCodeSettings::reset');
         $routes->post('qrcode/settings/delete-logo', 'Admin\QRCodeSettings::deleteLogo');
-        
+        $routes->get('qrcode/list', 'Admin\QRCodeSettings::listQRCodes');
+        $routes->get('qrcode/render/(:num)', 'Admin\QRCodeSettings::renderQR/$1');
+        $routes->get('qrcode/download/(:num)', 'Admin\QRCodeSettings::downloadQR/$1');
+
         // Guru Management
         $routes->get('guru', 'Admin\Guru::index');
         $routes->get('guru/create', 'Admin\Guru::create');
@@ -159,7 +162,7 @@ function adminRoutes(RouteCollection $routes)
         $routes->get('siswa/upload', 'Admin\Siswa::upload');
         $routes->post('siswa/import', 'Admin\Siswa::processUpload');
         $routes->get('siswa/download-template', 'Admin\Siswa::downloadTemplate');
-        
+
         // Laporan
         $routes->get('laporan', 'Admin\Laporan::index');
         $routes->get('laporan/index', 'Admin\Laporan::index');

@@ -3,7 +3,7 @@
     <!-- Brand Logo -->
     <a href="<?= base_url('admin/dashboard') ?>" class="brand-link">
         <img src="<?= base_url('uploads/logos/logo.png') ?>" alt="Logo Sekolah" class="brand-image img-circle elevation-3"
-             style="opacity: .8">
+            style="opacity: .8">
         <span class="brand-text font-weight-light">Jurnal Guru</span>
     </a>
 
@@ -12,14 +12,14 @@
         <!-- Sidebar user panel (optional) -->
         <div class="user-panel mt-3 pb-3 mb-3 d-flex">
             <div class="image">
-                <?php 
+                <?php
                 $profilePicture = session()->get('profile_picture');
                 if (!empty($profilePicture) && $profilePicture !== 'default.png'): ?>
-                    <img src="<?= base_url('uploads/profile_pictures/' . $profilePicture) ?>" 
-                         class="img-circle elevation-2" alt="User Image">
+                    <img src="<?= base_url('uploads/profile_pictures/' . $profilePicture) ?>"
+                        class="img-circle elevation-2" alt="User Image">
                 <?php else: ?>
-                    <img src="<?= base_url('uploads/profile_pictures/default.png') ?>" 
-                         class="img-circle elevation-2" alt="User Image">
+                    <img src="<?= base_url('uploads/profile_pictures/default.png') ?>"
+                        class="img-circle elevation-2" alt="User Image">
                 <?php endif; ?>
             </div>
             <div class="info">
@@ -38,20 +38,20 @@
                 <?php if (in_array(session()->get('role'), ['admin', 'super_admin'])): ?>
                     <li class="nav-item">
                         <a href="<?= base_url('admin/dashboard') ?>"
-                           class="nav-link <?= (isset($active_menu) && $active_menu == 'dashboard') ? 'active' : '' ?>">
+                            class="nav-link <?= (isset($active_menu) && $active_menu == 'dashboard') ? 'active' : '' ?>">
                             <i class="nav-icon fas fa-tachometer-alt"></i>
                             <p>Dashboard</p>
                         </a>
                     </li>
-                    
+
                     <li class="nav-item">
                         <a href="<?= base_url('admin/users') ?>"
-                           class="nav-link <?= (isset($active_menu) && $active_menu == 'users') ? 'active' : '' ?>">
+                            class="nav-link <?= (isset($active_menu) && $active_menu == 'users') ? 'active' : '' ?>">
                             <i class="nav-icon fas fa-users"></i>
                             <p>User Management</p>
                         </a>
                     </li>
-                    
+
                     <li class="nav-item has-treeview <?= (isset($active_menu) && in_array($active_menu, ['kelas', 'rombel', 'siswa', 'absensi', 'ruangan', 'pindah_kelas', 'mapel'])) ? 'menu-open' : '' ?>">
                         <a href="#" class="nav-link <?= (isset($active_menu) && in_array($active_menu, ['kelas', 'rombel', 'siswa', 'absensi', 'ruangan', 'pindah_kelas', 'mapel'])) ? 'active' : '' ?>">
                             <i class="nav-icon fas fa-school"></i>
@@ -63,83 +63,83 @@
                         <ul class="nav nav-treeview">
                             <li class="nav-item">
                                 <a href="<?= base_url('admin/ruangan') ?>"
-                                   class="nav-link <?= (isset($active_menu) && $active_menu == 'ruangan') ? 'active' : '' ?>">
+                                    class="nav-link <?= (isset($active_menu) && $active_menu == 'ruangan') ? 'active' : '' ?>">
                                     <i class="far fa-circle nav-icon"></i>
                                     <p>Ruangan</p>
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a href="<?= base_url('admin/rombel') ?>"
-                                   class="nav-link <?= (isset($active_menu) && $active_menu == 'rombel') ? 'active' : '' ?>">
+                                    class="nav-link <?= (isset($active_menu) && $active_menu == 'rombel') ? 'active' : '' ?>">
                                     <i class="far fa-circle nav-icon"></i>
                                     <p>Manajemen Rombel</p>
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a href="<?= base_url('admin/siswa') ?>"
-                                   class="nav-link <?= (isset($active_menu) && $active_menu == 'siswa') ? 'active' : '' ?>">
+                                    class="nav-link <?= (isset($active_menu) && $active_menu == 'siswa') ? 'active' : '' ?>">
                                     <i class="far fa-circle nav-icon"></i>
                                     <p>Data Siswa</p>
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a href="<?= base_url('admin/absensi') ?>"
-                                   class="nav-link <?= (isset($active_menu) && $active_menu == 'absensi') ? 'active' : '' ?>">
+                                    class="nav-link <?= (isset($active_menu) && $active_menu == 'absensi') ? 'active' : '' ?>">
                                     <i class="far fa-circle nav-icon"></i>
                                     <p>Absensi</p>
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a href="<?= base_url('admin/pindah-kelas') ?>"
-                                   class="nav-link <?= (isset($active_menu) && $active_menu == 'pindah_kelas') ? 'active' : '' ?>">
+                                    class="nav-link <?= (isset($active_menu) && $active_menu == 'pindah_kelas') ? 'active' : '' ?>">
                                     <i class="far fa-circle nav-icon"></i>
                                     <p>Pindah Kelas</p>
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a href="<?= base_url('admin/mapel') ?>"
-                                   class="nav-link <?= (isset($active_menu) && $active_menu == 'mapel') ? 'active' : '' ?>">
+                                    class="nav-link <?= (isset($active_menu) && $active_menu == 'mapel') ? 'active' : '' ?>">
                                     <i class="nav-icon fas fa-book"></i>
                                     <p>Mata Pelajaran</p>
                                 </a>
                             </li>
                         </ul>
                     </li>
-                    
+
                     <li class="nav-item">
                         <a href="<?= base_url('admin/monitoring') ?>"
-                           class="nav-link <?= (isset($active_menu) && $active_menu == 'monitoring') ? 'active' : '' ?>">
+                            class="nav-link <?= (isset($active_menu) && $active_menu == 'monitoring') ? 'active' : '' ?>">
                             <i class="nav-icon fas fa-search"></i>
                             <p>Monitoring Jurnal</p>
                         </a>
                     </li>
-                    
+
                     <li class="nav-item">
-                        <a href="<?= base_url('admin/laporan/statistik') ?>" 
-                           class="nav-link <?= (isset($active_menu) && $active_menu == 'statistik') ? 'active' : '' ?>">
+                        <a href="<?= base_url('admin/laporan/statistik') ?>"
+                            class="nav-link <?= (isset($active_menu) && $active_menu == 'statistik') ? 'active' : '' ?>">
                             <i class="nav-icon fas fa-chart-bar"></i>
                             <p>Statistik</p>
                         </a>
                     </li>
-                    
+
                     <li class="nav-item">
                         <a href="<?= base_url('admin/laporan') ?>"
-                           class="nav-link <?= (isset($active_menu) && $active_menu == 'laporan') ? 'active' : '' ?>">
+                            class="nav-link <?= (isset($active_menu) && $active_menu == 'laporan') ? 'active' : '' ?>">
                             <i class="nav-icon fas fa-file-alt"></i>
                             <p>Laporan</p>
                         </a>
                     </li>
-                    
+
                     <li class="nav-item text-danger">
                         <a href="<?= base_url('admin/laporan/export') ?>"
-                           class="nav-link <?= (isset($active_menu) && $active_menu == 'export') ? 'active' : '' ?>">
+                            class="nav-link <?= (isset($active_menu) && $active_menu == 'export') ? 'active' : '' ?>">
                             <i class="nav-icon fa-solid fa-file-export"></i>
                             <p>Export</p>
                         </a>
                     </li>
-                    
-                    <li class="nav-item has-treeview <?= (isset($active_menu) && in_array($active_menu, ['settings', 'qrcode_settings'])) ? 'menu-open' : '' ?>">
-                        <a href="#" class="nav-link <?= (isset($active_menu) && in_array($active_menu, ['settings', 'qrcode_settings'])) ? 'active' : '' ?>">
+
+                    <li class="nav-item has-treeview <?= (isset($active_menu) && in_array($active_menu, ['settings', 'qrcode_settings', 'qrcode_list'])) ? 'menu-open' : '' ?>">
+                        <a href="#" class="nav-link <?= (isset($active_menu) && in_array($active_menu, ['settings', 'qrcode_settings', 'qrcode_list'])) ? 'active' : '' ?>">
                             <i class="nav-icon fas fa-cogs"></i>
                             <p>
                                 Pengaturan
@@ -149,52 +149,59 @@
                         <ul class="nav nav-treeview">
                             <li class="nav-item">
                                 <a href="<?= base_url('admin/settings') ?>"
-                                   class="nav-link <?= (isset($active_menu) && $active_menu == 'settings') ? 'active' : '' ?>">
+                                    class="nav-link <?= (isset($active_menu) && $active_menu == 'settings') ? 'active' : '' ?>">
                                     <i class="far fa-circle nav-icon"></i>
                                     <p>Aplikasi</p>
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a href="<?= base_url('admin/qrcode/settings') ?>"
-                                   class="nav-link <?= (isset($active_menu) && $active_menu == 'qrcode_settings') ? 'active' : '' ?>">
+                                    class="nav-link <?= (isset($active_menu) && $active_menu == 'qrcode_settings') ? 'active' : '' ?>">
                                     <i class="far fa-circle nav-icon"></i>
                                     <p>QR Code</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="<?= base_url('admin/qrcode/list') ?>"
+                                    class="nav-link <?= (isset($active_menu) && $active_menu == 'qrcode_list') ? 'active' : '' ?>">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Daftar QR Code</p>
                                 </a>
                             </li>
                         </ul>
                     </li>
                 <?php endif; ?>
-                
+
                 <?php if (session()->get('role') == 'guru'): ?>
                     <li class="nav-item">
                         <a href="<?= base_url('guru/dashboard') ?>"
-                           class="nav-link <?= (isset($active_menu) && $active_menu == 'dashboard') ? 'active' : '' ?>">
+                            class="nav-link <?= (isset($active_menu) && $active_menu == 'dashboard') ? 'active' : '' ?>">
                             <i class="nav-icon fas fa-tachometer-alt"></i>
                             <p>Dashboard</p>
                         </a>
                     </li>
-                    
+
                     <li class="nav-item">
                         <a href="<?= base_url('guru/jurnal') ?>"
-                           class="nav-link <?= (isset($active_menu) && $active_menu == 'jurnal') ? 'active' : '' ?>">
+                            class="nav-link <?= (isset($active_menu) && $active_menu == 'jurnal') ? 'active' : '' ?>">
                             <i class="nav-icon fas fa-book"></i>
                             <p>Jurnal Mengajar</p>
                         </a>
                     </li>
                 <?php endif; ?>
-                
+
                 <?php if (session()->get('role') == 'kepala_sekolah'): ?>
                     <li class="nav-item">
                         <a href="<?= base_url('kepala_sekolah/dashboard') ?>"
-                           class="nav-link <?= (isset($active_menu) && $active_menu == 'dashboard') ? 'active' : '' ?>">
+                            class="nav-link <?= (isset($active_menu) && $active_menu == 'dashboard') ? 'active' : '' ?>">
                             <i class="nav-icon fas fa-tachometer-alt"></i>
                             <p>Dashboard</p>
                         </a>
                     </li>
-                    
+
                     <li class="nav-item">
                         <a href="<?= base_url('kepala_sekolah/laporan') ?>"
-                           class="nav-link <?= (isset($active_menu) && $active_menu == 'laporan') ? 'active' : '' ?>">
+                            class="nav-link <?= (isset($active_menu) && $active_menu == 'laporan') ? 'active' : '' ?>">
                             <i class="nav-icon fas fa-file-alt"></i>
                             <p>Laporan</p>
                         </a>
