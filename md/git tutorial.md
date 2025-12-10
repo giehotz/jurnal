@@ -18,7 +18,7 @@ Berikut rangkuman langkah kerja Git lokal dari awal sampai merge.
 6. Kerjakan fitur.
    Edit file
    git add .
-   git commit -m "tambah fitur kaldik"
+   git commit -m "tambah fitur qrcode"
 
 7. Pindah ke branch utama.
    git switch master
