@@ -24,14 +24,17 @@ class HolidayApi
             return $this->filterHolidays($cachedData, $month);
         }
 
-        // If not in cache, fetch from API
-        $url = "https://dayoffapi.vercel.app/api?year={$year}";
+        // Use api-harilibur as primary as it is more reliable
+        $url = "https://api-harilibur.vercel.app/api?year={$year}";
 
         try {
             $client = \Config\Services::curlrequest();
             $response = $client->request('GET', $url, [
-                'timeout' => 5,
-                'verify' => false
+                'timeout' => 10, // Increased timeout
+                'verify' => false,
+                'headers' => [
+                    'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                ]
             ]);
 
             if ($response->getStatusCode() == 200) {
@@ -41,9 +44,9 @@ class HolidayApi
                 if (is_array($data)) {
                     foreach ($data as $holiday) {
                         $holidays[] = [
-                            'tanggal' => $holiday['tanggal'],
-                            'keterangan' => $holiday['keterangan'],
-                            'is_negeri' => $holiday['is_cuti'] ?? false
+                            'tanggal' => $holiday['holiday_date'],
+                            'keterangan' => $holiday['holiday_name'],
+                            'is_negeri' => $holiday['is_national_holiday'] ?? false
                         ];
                     }
                 }

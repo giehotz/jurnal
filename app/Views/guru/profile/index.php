@@ -37,20 +37,26 @@
 
     .profile-action-buttons {
         display: flex;
-        gap: 12px;
-        margin-top: 20px;
+        gap: 15px;
+        margin-top: 25px;
         flex-wrap: wrap;
+        justify-content: center;
+        /* Center buttons */
     }
 
     .profile-action-buttons .btn {
-        flex: 1;
-        min-width: 150px;
+        flex: 0 1 auto;
+        /* Don't grow indefinitely */
+        width: 200px;
+        /* Fixed proportional width */
+        max-width: 100%;
         font-size: 14px;
-        font-weight: 500;
-        padding: 10px 15px;
-        border-radius: 6px;
-        border: 2px solid white;
-        background: transparent;
+        font-weight: 600;
+        padding: 12px 20px;
+        border-radius: 30px;
+        /* Pill shape */
+        border: 2px solid rgba(255, 255, 255, 0.8);
+        background: rgba(255, 255, 255, 0.1);
         color: white;
         transition: all 0.3s ease;
         text-decoration: none;
@@ -58,6 +64,7 @@
         align-items: center;
         justify-content: center;
         gap: 8px;
+        backdrop-filter: blur(5px);
     }
 
     .profile-action-buttons .btn:hover {
@@ -132,19 +139,19 @@
 <div class="container-fluid">
     <!-- Profile Header -->
     <?php $bannerFile = $user['banner'] ?? null; ?>
-    <div class="profile-header text-center" <?= !empty($bannerFile) ? 'style="background-image: linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.25)), url(' . base_url('uploads/profile_banners/' . $bannerFile) . '); background-size: cover; background-position: center;"' : '' ?> >
-        <?php 
+    <div class="profile-header text-center" <?= !empty($bannerFile) ? 'style="background-image: linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.25)), url(' . base_url('uploads/profile_banners/' . $bannerFile) . '); background-size: cover; background-position: center;"' : '' ?>>
+        <?php
         $profilePicture = $user['profile_picture'];
         if (!empty($profilePicture) && $profilePicture !== 'default.png'): ?>
             <img class="profile-avatar"
-                 src="<?= base_url('uploads/profile_pictures/' . $profilePicture) ?>"
-                 alt="<?= session()->get('nama') ?>">
+                src="<?= base_url('uploads/profile_pictures/' . $profilePicture) ?>"
+                alt="<?= session()->get('nama') ?>">
         <?php else: ?>
             <img class="profile-avatar"
-                 src="<?= base_url('uploads/profile_pictures/default.png') ?>"
-                 alt="<?= session()->get('nama') ?>">
+                src="<?= base_url('uploads/profile_pictures/default.png') ?>"
+                alt="<?= session()->get('nama') ?>">
         <?php endif; ?>
-        
+
         <h1 class="profile-name"><?= session()->get('nama') ?></h1>
         <p class="profile-role"><?= ucfirst(session()->get('role')) ?></p>
 

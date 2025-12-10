@@ -67,9 +67,9 @@ class KalenderMengajar extends BaseController
             }
         }
 
-        // Sort merged calendar
+        // Sort merged calendar by date ASC
         usort($mergedKalender, function ($a, $b) {
-            return strtotime($a['tanggal']) - strtotime($b['tanggal']);
+            return strcmp($a['tanggal'], $b['tanggal']);
         });
 
         // Statistics

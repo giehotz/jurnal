@@ -34,7 +34,7 @@ class QRCode extends BaseController
         }
 
         $userId = session()->get('user_id');
-        
+
         $urls = $this->urlModel->where('user_id', $userId)->orderBy('created_at', 'ASC')->findAll();
 
         $data = [
@@ -78,7 +78,7 @@ class QRCode extends BaseController
         ];
 
         if ($settings['allow_custom_size']) {
-             $rules['size'] = 'required|integer|greater_than[50]|less_than[1000]';
+            $rules['size'] = 'required|integer|greater_than[50]|less_than[1000]';
         }
 
         if ($settings['allow_custom_colors']) {
@@ -87,7 +87,7 @@ class QRCode extends BaseController
         }
 
         if ($settings['allow_custom_logo']) {
-             $rules['logo'] = 'permit_empty|max_size[logo,' . $settings['max_file_size_kb'] . ']|is_image[logo]|mime_in[logo,' . $settings['allowed_mime_types'] . ']';
+            $rules['logo'] = 'permit_empty|max_size[logo,' . $settings['max_file_size_kb'] . ']|is_image[logo]|mime_in[logo,' . $settings['allowed_mime_types'] . ']';
         }
 
         if (!$this->validate($rules)) {
@@ -98,7 +98,7 @@ class QRCode extends BaseController
         $originalUrl = $this->request->getPost('original_url');
         $customName = $this->request->getPost('custom_name');
         $customSlug = $this->request->getPost('custom_slug');
-        
+
         // Generate unique slug if not provided
         if (empty($customSlug)) {
             $customSlug = bin2hex(random_bytes(4));
@@ -116,12 +116,12 @@ class QRCode extends BaseController
 
         $this->urlModel->insert($urlData);
         $urlId = $this->urlModel->getInsertID();
-        
+
         // Use settings or user input based on permissions
         $size = $settings['allow_custom_size'] ? ($this->request->getPost('size') ?: $settings['default_size']) : $settings['default_size'];
         $qrColor = $settings['allow_custom_colors'] ? ($this->request->getPost('qr_color') ?: $settings['default_color']) : $settings['default_color'];
         $bgColor = $settings['allow_custom_colors'] ? ($this->request->getPost('bg_color') ?: $settings['default_bg_color']) : $settings['default_bg_color'];
-        
+
         $qrData = [
             'url_id' => $urlId,
             'size' => $size,
@@ -130,11 +130,11 @@ class QRCode extends BaseController
             'frame_style' => $this->request->getPost('frame_style') ?: 'none',
             'show_label' => $this->request->getPost('show_label') ? 1 : 0,
         ];
-        
+
         // Handle Logo
         $logoPath = null;
         $logoOption = $this->request->getPost('logo_option');
-        
+
         if ($logoOption === 'custom' && $settings['allow_custom_logo']) {
             $logo = $this->request->getFile('logo');
             if ($logo && $logo->isValid() && !$logo->hasMoved()) {
@@ -143,19 +143,19 @@ class QRCode extends BaseController
                 $logoPath = $newName;
             }
         } elseif ($logoOption === 'default' && !empty($settings['default_logo_path'])) {
-             // Use default logo
-             $defaultLogoSource = FCPATH . $settings['default_logo_path'];
-             if (file_exists($defaultLogoSource)) {
-                 $extension = pathinfo($defaultLogoSource, PATHINFO_EXTENSION);
-                 $newDefaultName = 'default_' . bin2hex(random_bytes(8)) . '.' . $extension;
-                 copy($defaultLogoSource, FCPATH . 'uploads/qr_logos/' . $newDefaultName);
-                 $logoPath = $newDefaultName;
-             }
+            // Use default logo
+            $defaultLogoSource = FCPATH . $settings['default_logo_path'];
+            if (file_exists($defaultLogoSource)) {
+                $extension = pathinfo($defaultLogoSource, PATHINFO_EXTENSION);
+                $newDefaultName = 'default_' . bin2hex(random_bytes(8)) . '.' . $extension;
+                copy($defaultLogoSource, FCPATH . 'uploads/qr_logos/' . $newDefaultName);
+                $logoPath = $newDefaultName;
+            }
         }
         // If 'none', $logoPath remains null
-        
+
         $qrData['logo_path'] = $logoPath;
-        
+
         $this->qrModel->insert($qrData);
 
         return redirect()->to('/guru/qrcode')->with('success', 'QR Code generated successfully');
@@ -177,9 +177,10 @@ class QRCode extends BaseController
 
         // Generate QR Code for display
         try {
-            $qrImage = $this->generateQRImage($url['original_url'], $settings);
+            $qrData = $this->generateFinalQRString($url['original_url'], $settings);
+            $qrImage = 'data:image/png;base64,' . base64_encode($qrData);
         } catch (\Exception $e) {
-            $qrImage = ''; // Handle error gracefully
+            $qrImage = '';
             session()->setFlashdata('error', 'Error generating QR: ' . $e->getMessage());
         }
 
@@ -231,6 +232,7 @@ class QRCode extends BaseController
         }
 
         $rules = [
+            'original_url' => 'required|valid_url',
             'custom_name'  => 'permit_empty|max_length[255]',
             'size'         => 'permit_empty|integer|greater_than[100]|less_than[1000]',
             'logo'         => 'permit_empty|uploaded[logo]|max_size[logo,2048]|is_image[logo]|mime_in[logo,image/jpg,image/jpeg,image/png]',
@@ -242,13 +244,14 @@ class QRCode extends BaseController
 
         // Update URL info
         $this->urlModel->update($id, [
+            'original_url' => $this->request->getPost('original_url'),
             'custom_name' => $this->request->getPost('custom_name')
         ]);
 
         // Update Settings
         $settings = $this->qrModel->where('url_id', $id)->first();
         $globalSettings = $this->qrSettingsModel->getActiveSettings();
-        
+
         // Use settings or user input based on permissions
         $size = $globalSettings['allow_custom_size'] ? ($this->request->getPost('size') ?: $globalSettings['default_size']) : $globalSettings['default_size'];
         $qrColor = $globalSettings['allow_custom_colors'] ? ($this->request->getPost('qr_color') ?: $globalSettings['default_color']) : $globalSettings['default_color'];
@@ -264,14 +267,14 @@ class QRCode extends BaseController
 
         // Handle Logo Upload
         $logoPath = $settings['logo_path']; // Keep existing logo by default
-        
+
         if ($globalSettings['allow_custom_logo']) {
             $logo = $this->request->getFile('logo');
             if ($logo && $logo->isValid() && !$logo->hasMoved()) {
                 $newName = $logo->getRandomName();
                 $logo->move(FCPATH . 'uploads/qr_logos', $newName);
                 $logoPath = $newName;
-                
+
                 // Delete old logo if exists
                 if (!empty($settings['logo_path']) && file_exists(FCPATH . 'uploads/qr_logos/' . $settings['logo_path'])) {
                     unlink(FCPATH . 'uploads/qr_logos/' . $settings['logo_path']);
@@ -282,41 +285,9 @@ class QRCode extends BaseController
                     unlink(FCPATH . 'uploads/qr_logos/' . $settings['logo_path']);
                 }
                 $logoPath = null;
-                
-                // If removed, should we revert to default? 
-                // Maybe user wants NO logo. But if default exists, maybe we should force it?
-                // Let's say if they remove custom logo, and default exists, we use default.
-                if (!empty($globalSettings['default_logo_path'])) {
-                     $defaultLogoSource = FCPATH . $globalSettings['default_logo_path'];
-                     if (file_exists($defaultLogoSource)) {
-                         $extension = pathinfo($defaultLogoSource, PATHINFO_EXTENSION);
-                         $newDefaultName = 'default_' . bin2hex(random_bytes(8)) . '.' . $extension;
-                         copy($defaultLogoSource, FCPATH . 'uploads/qr_logos/' . $newDefaultName);
-                         $logoPath = $newDefaultName;
-                     }
-                }
-            }
-        } else {
-            // If custom logo not allowed, force default
-            // If current logo is different from default (and not one of the auto-generated defaults), replace it?
-            // This is tricky. For now, let's just ensure if they try to change it, we ignore it.
-            // And if we want to enforce default on update:
-            if (!empty($globalSettings['default_logo_path'])) {
-                 // Check if current logo is valid? 
-                 // Let's just re-apply default if it's missing or we want to be strict.
-                 // Being strict:
-                 if (empty($logoPath)) {
-                     $defaultLogoSource = FCPATH . $globalSettings['default_logo_path'];
-                     if (file_exists($defaultLogoSource)) {
-                         $extension = pathinfo($defaultLogoSource, PATHINFO_EXTENSION);
-                         $newDefaultName = 'default_' . bin2hex(random_bytes(8)) . '.' . $extension;
-                         copy($defaultLogoSource, FCPATH . 'uploads/qr_logos/' . $newDefaultName);
-                         $logoPath = $newDefaultName;
-                     }
-                 }
             }
         }
-        
+
         $qrData['logo_path'] = $logoPath;
 
         $this->qrModel->update($settings['id'], $qrData);
@@ -327,7 +298,7 @@ class QRCode extends BaseController
     public function render($id)
     {
         if (!session()->get('logged_in') || session()->get('role') !== 'guru') {
-            return redirect()->to('/auth/login');
+            return $this->response->setStatusCode(404);
         }
 
         $url = $this->urlModel->find($id);
@@ -337,15 +308,15 @@ class QRCode extends BaseController
 
         $settings = $this->qrModel->where('url_id', $id)->first();
         $settings['label_text'] = $url['custom_name'] ?: $url['original_url'];
-        
+
         try {
-            $result = $this->buildQR($url['original_url'], $settings);
-            
-            return response()->setHeader('Content-Type', $result->getMimeType())
-                             ->setHeader('Cache-Control', 'public, max-age=31536000') // Cache for 1 year
-                             ->setHeader('Pragma', 'public')
-                             ->setHeader('Expires', gmdate('D, d M Y H:i:s', time() + 31536000) . ' GMT')
-                             ->setBody($result->getString());
+            $resultString = $this->generateFinalQRString($url['original_url'], $settings);
+
+            return response()->setHeader('Content-Type', 'image/png')
+                ->setHeader('Cache-Control', 'public, max-age=31536000') // Cache for 1 year
+                ->setHeader('Pragma', 'public')
+                ->setHeader('Expires', gmdate('D, d M Y H:i:s', time() + 31536000) . ' GMT')
+                ->setBody($resultString);
         } catch (\Exception $e) {
             return $this->response->setStatusCode(500);
         }
@@ -364,19 +335,19 @@ class QRCode extends BaseController
 
         $settings = $this->qrModel->where('url_id', $id)->first();
         $settings['label_text'] = $url['custom_name'] ?: $url['original_url'];
-        
+
         try {
-            $result = $this->buildQR($url['original_url'], $settings);
-            
+            $resultString = $this->generateFinalQRString($url['original_url'], $settings);
+
             $filename = preg_replace('/[^a-zA-Z0-9\s_\-]/', '', $url['custom_name']);
             $filename = str_replace(' ', '_', $filename);
             if (empty($filename)) {
                 $filename = 'qrcode-' . $url['short_slug'];
             }
 
-            return response()->setHeader('Content-Type', $result->getMimeType())
-                             ->setHeader('Content-Disposition', 'attachment; filename="'.$filename.'.png"')
-                             ->setBody($result->getString());
+            return response()->setHeader('Content-Type', 'image/png')
+                ->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '.png"')
+                ->setBody($resultString);
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Error generating QR: ' . $e->getMessage());
         }
@@ -394,35 +365,32 @@ class QRCode extends BaseController
         }
 
         $this->urlModel->delete($id);
-        // Also delete settings via foreign key cascade, but good to be explicit if needed.
-        // Schema has CASCADE, so it should be fine.
-        
+
         return redirect()->to('/guru/qrcode')->with('success', 'QR Code deleted successfully');
     }
 
-    private function generateQRImage($content, $settings)
+    private function generateFinalQRString($content, $settings)
     {
-        $result = $this->buildQR($content, $settings);
-        return $result->getDataUri();
+        // 1. Generate base QR (ResultInterface)
+        $result = $this->buildBaseQR($content, $settings);
+        $qrString = $result->getString();
+
+        // 2. Apply Frame Style via GD
+        if (!empty($settings['frame_style']) && $settings['frame_style'] !== 'none') {
+            $qrString = $this->applyFrameStyle($qrString, $settings['frame_style']);
+        }
+
+        return $qrString;
     }
 
-    private function buildQR($content, $settings)
+    private function buildBaseQR($content, $settings)
     {
         $size = $settings['size'] ?? 300;
         $qrColor = $this->hexToRgb($settings['qr_color'] ?? '#000000');
         $bgColor = $this->hexToRgb($settings['bg_color'] ?? '#FFFFFF');
 
+        // We use Margin default, styling is done post-process for shapes
         $roundBlockSizeMode = RoundBlockSizeMode::Margin;
-        if (isset($settings['frame_style'])) {
-            switch ($settings['frame_style']) {
-                case 'rounded':
-                    $roundBlockSizeMode = RoundBlockSizeMode::Enlarge;
-                    break;
-                case 'circle':
-                    $roundBlockSizeMode = RoundBlockSizeMode::Shrink;
-                    break;
-            }
-        }
 
         $builder = Builder::create()
             ->writer(new PngWriter())
@@ -438,7 +406,7 @@ class QRCode extends BaseController
 
         if (!empty($settings['logo_path'])) {
             $logoPath = FCPATH . 'uploads/qr_logos/' . $settings['logo_path'];
-            
+
             // If not found in qr_logos, check if it's a direct path (e.g. default logo)
             if (!file_exists($logoPath)) {
                 $logoPath = FCPATH . $settings['logo_path'];
@@ -452,20 +420,82 @@ class QRCode extends BaseController
         }
 
         if (!empty($settings['show_label'])) {
-            // We need the custom name or original URL to show as label. 
-            // Since buildQR only gets content and settings, we might need to pass the label text in settings or infer it.
-            // For preview, we might not have the custom name easily if it's just input.
-            // Let's assume 'label_text' is passed in settings or we use content.
-            // But wait, 'content' is the URL. We probably want the 'custom_name'.
-            // In store/update/preview, we should pass 'label_text'.
-            
             $labelText = $settings['label_text'] ?? $content;
             $builder->labelText($labelText);
-            $builder->labelFont(new NotoSans(20));
+            $builder->labelFont(new NotoSans(14));
             $builder->labelAlignment(LabelAlignment::Center);
         }
-            
+
         return $builder->build();
+    }
+
+    private function applyFrameStyle($imageString, $style)
+    {
+        $src = imagecreatefromstring($imageString);
+        if (!$src) return $imageString;
+
+        $width = imagesx($src);
+        $height = imagesy($src);
+
+        // Create compatible image
+        $dst = imagecreatetruecolor($width, $height);
+
+        // Handle transparency
+        imagealphablending($dst, false);
+        imagesavealpha($dst, true);
+        $transparent = imagecolorallocatealpha($dst, 0, 0, 0, 127);
+        imagefill($dst, 0, 0, $transparent);
+
+        if ($style === 'circle') {
+            $centerX = $width / 2;
+            $centerY = $height / 2;
+            $radius = min($width, $height) / 2;
+
+            for ($x = 0; $x < $width; $x++) {
+                for ($y = 0; $y < $height; $y++) {
+                    $dx = $x - $centerX;
+                    $dy = $y - $centerY;
+                    if ($dx * $dx + $dy * $dy <= $radius * $radius) {
+                        $rgb = imagecolorat($src, $x, $y);
+                        imagesetpixel($dst, $x, $y, $rgb);
+                    }
+                }
+            }
+        } elseif ($style === 'rounded') {
+            $radius = min($width, $height) * 0.10; // 10% radius
+
+            for ($x = 0; $x < $width; $x++) {
+                for ($y = 0; $y < $height; $y++) {
+                    $shouldDraw = true;
+                    // Check corners
+                    if ($x < $radius && $y < $radius) { // TL
+                        if (($x - $radius) * ($x - $radius) + ($y - $radius) * ($y - $radius) > $radius * $radius) $shouldDraw = false;
+                    } elseif ($x > $width - $radius && $y < $radius) { // TR
+                        if (($x - ($width - $radius)) * ($x - ($width - $radius)) + ($y - $radius) * ($y - $radius) > $radius * $radius) $shouldDraw = false;
+                    } elseif ($x < $radius && $y > $height - $radius) { // BL
+                        if (($x - $radius) * ($x - $radius) + ($y - ($height - $radius)) * ($y - ($height - $radius)) > $radius * $radius) $shouldDraw = false;
+                    } elseif ($x > $width - $radius && $y > $height - $radius) { // BR
+                        if (($x - ($width - $radius)) * ($x - ($width - $radius)) + ($y - ($height - $radius)) * ($y - ($height - $radius)) > $radius * $radius) $shouldDraw = false;
+                    }
+
+                    if ($shouldDraw) {
+                        $rgb = imagecolorat($src, $x, $y);
+                        imagesetpixel($dst, $x, $y, $rgb);
+                    }
+                }
+            }
+        } else {
+            // Default copy
+            imagecopy($dst, $src, 0, 0, 0, 0, $width, $height);
+        }
+
+        ob_start();
+        imagepng($dst);
+        $finalImage = ob_get_clean();
+
+
+
+        return $finalImage;
     }
 
     public function preview()
@@ -488,65 +518,32 @@ class QRCode extends BaseController
             'label_text' => $this->request->getPost('custom_name') ?: $originalUrl,
         ];
 
-        // Handle Logo (Temporary upload or just ignore for preview if too complex, 
-        // but for "wow" we should try. JS FormData can send files).
-        // Handle Logo
-        $logoOption = $this->request->getPost('logo_option');
-        $globalSettings = $this->qrSettingsModel->getActiveSettings();
+        // Handle Logo Logic for Preview
+        $settings['logo_path'] = null; // Default to no logo
 
-        if ($logoOption === 'custom') {
-            $logo = $this->request->getFile('logo');
-            if ($logo && $logo->isValid() && !$logo->hasMoved()) {
-                $newName = $logo->getRandomName();
-                $logo->move(FCPATH . 'uploads/qr_logos', $newName);
-                $settings['logo_path'] = $newName;
-            } else {
-                // If custom selected but no new file, check if we have a current logo from edit
-                $currentLogo = $this->request->getPost('current_logo');
-                if ($currentLogo) {
-                    $settings['logo_path'] = basename($currentLogo);
-                }
-            }
-        } elseif ($logoOption === 'default') {
-            if (!empty($globalSettings['default_logo_path'])) {
-                $settings['logo_path'] = $globalSettings['default_logo_path'];
-                // Note: buildQR expects just the filename if it's in uploads/qr_logos OR a full path?
-                // Let's check buildQR. 
-                // buildQR: $logoPath = FCPATH . 'uploads/qr_logos/' . $settings['logo_path'];
-                // But default logo is in public/uploads/logos/ (usually).
-                // Wait, default logo path in DB is relative to public, e.g. 'uploads/logos/default.png'.
-                // buildQR logic at line 431: $logoPath = FCPATH . 'uploads/qr_logos/' . $settings['logo_path'];
-                // This assumes all logos are in 'uploads/qr_logos'.
-                // If we use default logo, it might be elsewhere.
-                // We need to handle this in buildQR or copy it here.
-                // Copying for preview seems wasteful.
-                // Let's modify buildQR to handle absolute paths or check multiple locations?
-                // Or better, let's pass the full path to buildQR if it's the default logo.
-                
-                // Actually, let's fix buildQR to be more flexible.
-                // But for now, let's just hack the settings['logo_path'] to be a flag or handle it in buildQR.
-                // If I change buildQR, it affects everything.
-                
-                // Let's look at buildQR again.
-                // Line 430: if (!empty($settings['logo_path'])) {
-                // Line 431:    $logoPath = FCPATH . 'uploads/qr_logos/' . $settings['logo_path'];
-                
-                // If I set $settings['logo_path'] to '../../uploads/logos/default.png', it might work?
-                // FCPATH is root. uploads/qr_logos is inside public (or root/public).
-                // If FCPATH points to public folder (CI4 default), then:
-                // FCPATH . 'uploads/qr_logos/' . '../../uploads/logos/default.png' -> public/uploads/logos/default.png
-                // This seems risky.
-                
-                // Better approach: Update buildQR to check if file exists at path relative to FCPATH first.
-            }
-        } else {
-            // None
+        $logo = $this->request->getFile('logo');
+
+        // 1. Check if new logo is being uploaded
+        if ($logo && $logo->isValid() && !$logo->hasMoved()) {
+            $newName = $logo->getRandomName();
+            $logo->move(FCPATH . 'uploads/qr_logos', $newName);
+            $settings['logo_path'] = $newName;
+        }
+        // 2. Check if user wants to remove the logo
+        elseif ($this->request->getPost('remove_logo') == '1') {
             $settings['logo_path'] = null;
+        }
+        // 3. Fallback to current existing logo
+        else {
+            $currentLogo = $this->request->getPost('current_logo');
+            if ($currentLogo) {
+                $settings['logo_path'] = basename($currentLogo);
+            }
         }
 
         try {
-            $result = $this->buildQR($originalUrl, $settings);
-            return $this->response->setContentType($result->getMimeType())->setBody($result->getString());
+            $resultString = $this->generateFinalQRString($originalUrl, $settings);
+            return $this->response->setContentType('image/png')->setBody($resultString);
         } catch (\Exception $e) {
             return $this->response->setStatusCode(500)->setBody($e->getMessage());
         }
@@ -555,14 +552,14 @@ class QRCode extends BaseController
     private function hexToRgb($hex)
     {
         $hex = str_replace("#", "", $hex);
-        if(strlen($hex) == 3) {
-            $r = hexdec(substr($hex,0,1).substr($hex,0,1));
-            $g = hexdec(substr($hex,1,1).substr($hex,1,1));
-            $b = hexdec(substr($hex,2,1).substr($hex,2,1));
+        if (strlen($hex) == 3) {
+            $r = hexdec(substr($hex, 0, 1) . substr($hex, 0, 1));
+            $g = hexdec(substr($hex, 1, 1) . substr($hex, 1, 1));
+            $b = hexdec(substr($hex, 2, 1) . substr($hex, 2, 1));
         } else {
-            $r = hexdec(substr($hex,0,2));
-            $g = hexdec(substr($hex,2,2));
-            $b = hexdec(substr($hex,4,2));
+            $r = hexdec(substr($hex, 0, 2));
+            $g = hexdec(substr($hex, 2, 2));
+            $b = hexdec(substr($hex, 4, 2));
         }
         return [$r, $g, $b];
     }

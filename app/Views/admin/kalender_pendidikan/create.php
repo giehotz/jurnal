@@ -65,11 +65,31 @@
                         <input type="text" name="jenis_hari_manual" class="form-control" placeholder="Tulis jenis hari..." value="<?= old('jenis_hari_manual') ?>">
                     </div>
 
+                    <div class="form-group">
+                        <label>Warna Label</label>
+                        <div class="input-group">
+                            <input type="color" name="warna_kode" class="form-control form-control-color" value="<?= old('warna_kode') ?? '#17a2b8' ?>" title="Pilih Warna">
+                            <div class="input-group-append">
+                                <span class="input-group-text bg-white small text-muted">Klik untuk ganti warna</span>
+                            </div>
+                        </div>
+                    </div>
+
                     <script>
                         document.addEventListener('DOMContentLoaded', function() {
                             const select = document.querySelector('select[name="jenis_hari"]');
                             const manualGroup = document.getElementById('manual_jenis_hari_group');
                             const manualInput = document.querySelector('input[name="jenis_hari_manual"]');
+
+                            const colorInput = document.querySelector('input[name="warna_kode"]');
+                            const colorMap = {
+                                'libur_nasional': '#dc3545',
+                                'libur_sekolah': '#fd7e14',
+                                'ujian': '#ffc107',
+                                'event': '#17a2b8',
+                                'rapat': '#6f42c1',
+                                'lainnya': '#6c757dff'
+                            };
 
                             function toggleManual() {
                                 if (select.value === 'lainnya') {
@@ -78,11 +98,16 @@
                                 } else {
                                     manualGroup.style.display = 'none';
                                     manualInput.removeAttribute('required');
-                                    manualInput.value = ''; // Clear if hidden? Maybe better to keep if accidental toggle.
                                 }
                             }
 
-                            select.addEventListener('change', toggleManual);
+                            select.addEventListener('change', function() {
+                                toggleManual();
+                                if (colorMap[this.value]) {
+                                    colorInput.value = colorMap[this.value];
+                                }
+                            });
+
                             // Run on init in case of validation error redirect
                             toggleManual();
                         });

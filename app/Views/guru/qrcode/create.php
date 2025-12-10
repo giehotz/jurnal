@@ -18,7 +18,7 @@
                 <div class="card-body">
                     <form action="<?= base_url('guru/qrcode/store') ?>" method="post" enctype="multipart/form-data">
                         <?= csrf_field() ?>
-                        
+
                         <div class="form-group">
                             <label for="original_url">URL Tujuan <span class="text-danger">*</span></label>
                             <input type="url" class="form-control <?= session('errors.original_url') ? 'is-invalid' : '' ?>" id="original_url" name="original_url" value="<?= old('original_url') ?>" placeholder="https://example.com" required>
@@ -80,24 +80,24 @@
                                     <?php endif; ?>
                                 </div>
                             </div>
-                            
+
                             <div class="col-md-12 mt-3">
                                 <label>Opsi Logo</label>
                                 <div class="form-group">
                                     <?php if ($settings['allow_custom_logo']): ?>
                                         <div class="custom-control custom-radio mb-2">
-                                            <input type="radio" id="logo_option_none" name="logo_option" class="custom-control-input" value="none" checked>
+                                            <input type="radio" id="logo_option_none" name="logo_option" class="custom-control-input" value="none" <?= empty($settings['default_logo_path']) ? 'checked' : '' ?>>
                                             <label class="custom-control-label" for="logo_option_none">Tanpa Logo</label>
                                         </div>
-                                        
+
                                         <?php if (!empty($settings['default_logo_path'])): ?>
-                                        <div class="custom-control custom-radio mb-2">
-                                            <input type="radio" id="logo_option_default" name="logo_option" class="custom-control-input" value="default">
-                                            <label class="custom-control-label d-flex align-items-center" for="logo_option_default">
-                                                Gunakan Logo Default Sekolah
-                                                <img src="<?= base_url($settings['default_logo_path']) ?>" alt="Default Logo" class="ml-2 img-thumbnail" style="height: 30px;">
-                                            </label>
-                                        </div>
+                                            <div class="custom-control custom-radio mb-2">
+                                                <input type="radio" id="logo_option_default" name="logo_option" class="custom-control-input" value="default" checked>
+                                                <label class="custom-control-label d-flex align-items-center" for="logo_option_default">
+                                                    Gunakan Logo Default Sekolah
+                                                    <img src="<?= base_url($settings['default_logo_path']) ?>" alt="Default Logo" class="ml-2 img-thumbnail" style="height: 30px;">
+                                                </label>
+                                            </div>
                                         <?php endif; ?>
 
                                         <div class="custom-control custom-radio mb-2">
@@ -118,32 +118,32 @@
                                     <?php else: ?>
                                         <!-- Custom Logo Disabled -->
                                         <div class="custom-control custom-radio mb-2">
-                                            <input type="radio" id="logo_option_none" name="logo_option" class="custom-control-input" value="none" checked>
+                                            <input type="radio" id="logo_option_none" name="logo_option" class="custom-control-input" value="none" <?= empty($settings['default_logo_path']) ? 'checked' : '' ?>>
                                             <label class="custom-control-label" for="logo_option_none">Tanpa Logo</label>
                                         </div>
 
                                         <?php if (!empty($settings['default_logo_path'])): ?>
-                                        <div class="custom-control custom-radio mb-2">
-                                            <input type="radio" id="logo_option_default" name="logo_option" class="custom-control-input" value="default">
-                                            <label class="custom-control-label d-flex align-items-center" for="logo_option_default">
-                                                Gunakan Logo Default Sekolah
-                                                <img src="<?= base_url($settings['default_logo_path']) ?>" alt="Default Logo" class="ml-2 img-thumbnail" style="height: 30px;">
-                                            </label>
-                                        </div>
+                                            <div class="custom-control custom-radio mb-2">
+                                                <input type="radio" id="logo_option_default" name="logo_option" class="custom-control-input" value="default" checked>
+                                                <label class="custom-control-label d-flex align-items-center" for="logo_option_default">
+                                                    Gunakan Logo Default Sekolah
+                                                    <img src="<?= base_url($settings['default_logo_path']) ?>" alt="Default Logo" class="ml-2 img-thumbnail" style="height: 30px;">
+                                                </label>
+                                            </div>
                                         <?php endif; ?>
-                                        
+
                                         <div class="alert alert-secondary mt-2 py-1 px-2 small">
                                             <i class="fas fa-info-circle mr-1"></i> Upload logo kustom dinonaktifkan oleh Admin.
                                         </div>
                                     <?php endif; ?>
                                 </div>
                             </div>
-                            
+
                             <script>
                                 document.addEventListener('DOMContentLoaded', function() {
                                     const logoOptions = document.getElementsByName('logo_option');
                                     const customLogoInput = document.getElementById('custom_logo_input');
-                                    
+
                                     function toggleCustomLogo() {
                                         let selected = 'none';
                                         for (const option of logoOptions) {
@@ -152,21 +152,21 @@
                                                 break;
                                             }
                                         }
-                                        
+
                                         if (customLogoInput) {
                                             customLogoInput.style.display = (selected === 'custom') ? 'block' : 'none';
                                         }
                                     }
-                                    
+
                                     logoOptions.forEach(option => {
                                         option.addEventListener('change', toggleCustomLogo);
                                     });
-                                    
+
                                     // Initial check
                                     toggleCustomLogo();
                                 });
                             </script>
-                            
+
                             <div class="col-md-12 mt-3">
                                 <div class="form-group">
                                     <label for="frame_style">Gaya Frame</label>
@@ -193,7 +193,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="col-lg-4">
             <!-- Preview Card -->
             <div class="card shadow mb-4 sticky-top" style="top: 100px; z-index: 100;">
@@ -253,28 +253,28 @@
             const formData = new FormData(form);
 
             fetch('<?= base_url('guru/qrcode/preview') ?>', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => {
-                if (!response.ok) throw new Error('Network response was not ok');
-                return response.blob();
-            })
-            .then(blob => {
-                const imageUrl = URL.createObjectURL(blob);
-                previewContainer.innerHTML = `<img src="${imageUrl}" class="img-fluid" style="max-height: 250px;">`;
-                previewContainer.style.display = 'flex';
-                loading.classList.add('d-none');
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                previewContainer.innerHTML = '<p class="text-danger small">Gagal memuat preview</p>';
-                previewContainer.style.display = 'flex';
-                loading.classList.add('d-none');
-            });
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.blob();
+                })
+                .then(blob => {
+                    const imageUrl = URL.createObjectURL(blob);
+                    previewContainer.innerHTML = `<img src="${imageUrl}" class="img-fluid" style="max-height: 250px;">`;
+                    previewContainer.style.display = 'flex';
+                    loading.classList.add('d-none');
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    previewContainer.innerHTML = '<p class="text-danger small">Gagal memuat preview</p>';
+                    previewContainer.style.display = 'flex';
+                    loading.classList.add('d-none');
+                });
         }
 
         // Add event listeners with debounce
@@ -285,7 +285,7 @@
                 timeout = setTimeout(updatePreview, 800); // Delay 800ms
             });
         });
-        
+
         // Custom file input label
         document.querySelector('.custom-file-input').addEventListener('change', function(e) {
             var fileName = document.getElementById("logo").files[0].name;

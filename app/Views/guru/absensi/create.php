@@ -3,6 +3,36 @@
 <?= $this->section('content') ?>
 
 <style>
+    /* Reset untuk Desktop View - pastikan tabel normal */
+    @media (min-width: 769px) {
+        .table-mobile {
+            display: table;
+            width: 100%;
+        }
+
+        .table-mobile thead {
+            display: table-header-group;
+        }
+
+        .table-mobile tbody {
+            display: table-row-group;
+        }
+
+        .table-mobile tbody tr {
+            display: table-row;
+        }
+
+        .table-mobile td {
+            display: table-cell;
+        }
+
+        /* Pastikan attendance options terlihat dengan baik di desktop */
+        .attendance-options .btn-group {
+            display: flex;
+            justify-content: center;
+        }
+    }
+
     /* Kustomisasi CSS untuk Mobile View */
     @media (max-width: 768px) {
 
@@ -180,6 +210,9 @@
                     </div>
                 </form>
             </div>
+            <?= $this->endSection() ?>
+
+            <?= $this->section('scripts') ?>
             <script>
                 // Initialize DateTimePicker for this page
                 $(document).ready(function() {
@@ -212,7 +245,7 @@
                                     document.getElementById('tanggal').value = tanggal;
                                     console.log('Date updated from input:', tanggal);
                                 }
-                            } catch(e) {
+                            } catch (e) {
                                 console.error('Error parsing date:', e);
                             }
                         }
@@ -255,6 +288,7 @@
 
                                 if (data.error) {
                                     errorMessage.style.display = 'block';
+                                    // Display the actual error message from server
                                     errorMessage.innerHTML = '<i class="fas fa-exclamation-triangle"></i> ' + data.error;
                                     console.error('Error dari server:', data.error);
                                     return;
@@ -267,38 +301,38 @@
                                         // UX Improvement: Menggunakan Button Group (Radio) daripada Select Option
                                         // Ini jauh lebih cepat di mobile (sekali tap vs tap-scroll-tap)
                                         const row = `
-                                        <tr>
-                                            <td class="d-none d-md-table-cell">${index + 1}</td>
-                                            <td class="d-none d-md-table-cell">${siswa.siswa_nis}</td>
-                                            <td class="student-name">
-                                                <span class="d-md-none badge badge-light mr-1">${siswa.siswa_nis}</span>
-                                                ${siswa.siswa_nama}
-                                            </td>
-                                            <td class="attendance-options">
-                                                <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
-                                                    <label class="btn btn-outline-success active">
-                                                        <input type="radio" name="absensi[${siswa.siswa_id}][status]" value="hadir" checked> 
-                                                        <span class="d-none d-sm-inline">Hadir</span><span class="d-inline d-sm-none">H</span>
-                                                    </label>
-                                                    <label class="btn btn-outline-warning">
-                                                        <input type="radio" name="absensi[${siswa.siswa_id}][status]" value="sakit"> 
-                                                        <span class="d-none d-sm-inline">Sakit</span><span class="d-inline d-sm-none">S</span>
-                                                    </label>
-                                                    <label class="btn btn-outline-info">
-                                                        <input type="radio" name="absensi[${siswa.siswa_id}][status]" value="izin"> 
-                                                        <span class="d-none d-sm-inline">Izin</span><span class="d-inline d-sm-none">I</span>
-                                                    </label>
-                                                    <label class="btn btn-outline-danger">
-                                                        <input type="radio" name="absensi[${siswa.siswa_id}][status]" value="alfa"> 
-                                                        <span class="d-none d-sm-inline">Alfa</span><span class="d-inline d-sm-none">A</span>
-                                                    </label>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <input type="text" name="absensi[${siswa.siswa_id}][keterangan]" class="form-control" placeholder="Ket. (Opsional)">
-                                            </td>
-                                        </tr>
-                                    `;
+                            <tr>
+                                <td class="d-none d-md-table-cell">${index + 1}</td>
+                                <td class="d-none d-md-table-cell">${siswa.siswa_nis}</td>
+                                <td class="student-name">
+                                    <span class="d-md-none badge badge-light mr-1">${siswa.siswa_nis}</span>
+                                    ${siswa.siswa_nama}
+                                </td>
+                                <td class="attendance-options">
+                                    <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
+                                        <label class="btn btn-outline-success active">
+                                            <input type="radio" name="absensi[${siswa.siswa_id}][status]" value="hadir" checked> 
+                                            <span class="d-none d-sm-inline">Hadir</span><span class="d-inline d-sm-none">H</span>
+                                        </label>
+                                        <label class="btn btn-outline-warning">
+                                            <input type="radio" name="absensi[${siswa.siswa_id}][status]" value="sakit"> 
+                                            <span class="d-none d-sm-inline">Sakit</span><span class="d-inline d-sm-none">S</span>
+                                        </label>
+                                        <label class="btn btn-outline-info">
+                                            <input type="radio" name="absensi[${siswa.siswa_id}][status]" value="izin"> 
+                                            <span class="d-none d-sm-inline">Izin</span><span class="d-inline d-sm-none">I</span>
+                                        </label>
+                                        <label class="btn btn-outline-danger">
+                                            <input type="radio" name="absensi[${siswa.siswa_id}][status]" value="alfa"> 
+                                            <span class="d-none d-sm-inline">Alfa</span><span class="d-inline d-sm-none">A</span>
+                                        </label>
+                                    </div>
+                                </td>
+                                <td>
+                                    <input type="text" name="absensi[${siswa.siswa_id}][keterangan]" class="form-control" placeholder="Ket. (Opsional)">
+                                </td>
+                            </tr>
+                        `;
                                         absensiBody.innerHTML += row;
                                     });
                                 } else {

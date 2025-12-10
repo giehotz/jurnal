@@ -76,11 +76,18 @@ class QRCodeSettings extends BaseController
         $file = $this->request->getFile('default_logo');
         if ($file && $file->isValid() && !$file->hasMoved()) {
             $newName = $file->getRandomName();
-            $file->move(ROOTPATH . 'public/uploads/logos', $newName);
-            $data['default_logo_path'] = 'uploads/logos/' . $newName;
+            $file->move(ROOTPATH . 'public/uploads/qr_logos', $newName);
+            $data['default_logo_path'] = 'uploads/qr_logos/' . $newName;
         }
 
-        if ($this->qrSettingsModel->update($id, $data)) {
+        $success = false;
+        if (isset($settings['id'])) {
+            $success = $this->qrSettingsModel->update($id, $data);
+        } else {
+            $success = $this->qrSettingsModel->insert($data);
+        }
+
+        if ($success) {
             return redirect()->to('/admin/qrcode/settings')->with('success', 'Pengaturan berhasil diperbarui.');
         } else {
             return redirect()->back()->withInput()->with('error', 'Gagal memperbarui pengaturan.');

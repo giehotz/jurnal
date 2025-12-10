@@ -99,6 +99,11 @@ class KalenderPendidikan extends BaseController
             }
         }
 
+        // Sort events by date
+        usort($calendarMonthEvents, function ($a, $b) {
+            return strcmp($a['tanggal'], $b['tanggal']);
+        });
+
         //    c. Prepare $eventsByDate
         $eventsByDate = [];
         foreach ($calendarMonthEvents as $k) {
@@ -259,13 +264,18 @@ class KalenderPendidikan extends BaseController
         }
 
         // Insert
+        $warnaKode = $this->request->getPost('warna_kode');
+        if (empty($warnaKode)) {
+            $warnaKode = $this->kalenderModel->getWarnaBerdasarkanJenis($jenisHari);
+        }
+
         $this->kalenderModel->insert([
             'tahun_ajaran' => $tahunAjaran,
             'semester' => $semester,
             'tanggal' => $tanggal,
             'jenis_hari' => $jenisHari,
             'keterangan' => $this->request->getPost('keterangan'),
-            'warna_kode' => $this->kalenderModel->getWarnaBerdasarkanJenis($jenisHari),
+            'warna_kode' => $warnaKode,
             'created_by' => session('user_id'),
             'lembaga_id' => $lembagaId,
         ]);
@@ -311,10 +321,15 @@ class KalenderPendidikan extends BaseController
             }
         }
 
+        $warnaKode = $this->request->getPost('warna_kode');
+        if (empty($warnaKode)) {
+            $warnaKode = $this->kalenderModel->getWarnaBerdasarkanJenis($jenisHari);
+        }
+
         $this->kalenderModel->update($id, [
             'jenis_hari' => $jenisHari,
             'keterangan' => $this->request->getPost('keterangan'),
-            'warna_kode' => $this->kalenderModel->getWarnaBerdasarkanJenis($jenisHari),
+            'warna_kode' => $warnaKode,
             'tanggal'    => $this->request->getPost('tanggal'), // Allow changing date?
         ]);
 

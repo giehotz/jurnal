@@ -18,12 +18,14 @@
                 <div class="card-body">
                     <form action="<?= base_url('guru/qrcode/update/' . $url['id']) ?>" method="post" enctype="multipart/form-data">
                         <?= csrf_field() ?>
-                        
+
                         <div class="form-group">
                             <label for="original_url">URL Tujuan</label>
-                            <input type="text" class="form-control" value="<?= esc($url['original_url']) ?>" readonly>
-                            <input type="hidden" id="original_url" name="original_url" value="<?= esc($url['original_url']) ?>">
-                            <small class="form-text text-muted">URL tidak dapat diubah.</small>
+                            <input type="url" class="form-control <?= session('errors.original_url') ? 'is-invalid' : '' ?>" id="original_url" name="original_url" value="<?= old('original_url', $url['original_url']) ?>" placeholder="https://example.com" required>
+                            <div class="invalid-feedback">
+                                <?= session('errors.original_url') ?>
+                            </div>
+                            <small class="form-text text-muted">Pastikan URL diawali dengan http:// atau https://</small>
                         </div>
 
                         <div class="form-group">
@@ -78,41 +80,41 @@
                                     <?php endif; ?>
                                 </div>
                             </div>
-                            
+
                             <?php if ($globalSettings['allow_custom_logo']): ?>
-                            <div class="col-md-12 mt-3">
-                                <div class="form-group">
-                                    <label for="logo">Upload Logo Baru (Opsional)</label>
-                                    <div class="custom-file">
-                                        <input type="file" class="custom-file-input <?= session('errors.logo') ? 'is-invalid' : '' ?>" id="logo" name="logo" accept="<?= $globalSettings['allowed_mime_types'] ?? 'image/png, image/jpeg' ?>">
-                                        <label class="custom-file-label" for="logo">Pilih file logo...</label>
-                                    </div>
-                                    <input type="hidden" name="current_logo" value="<?= esc($settings['logo_path']) ?>">
-                                    <small class="form-text text-muted">Maks: <?= $globalSettings['max_file_size_kb'] ?>KB. Biarkan kosong jika tidak ingin mengubah logo.</small>
-                                    <?php if (!empty($settings['logo_path'])): ?>
-                                        <div class="mt-2">
-                                            <span class="badge badge-info">Logo saat ini terpasang</span>
-                                            <div class="custom-control custom-checkbox mt-1">
-                                                <input type="checkbox" class="custom-control-input" id="remove_logo" name="remove_logo" value="1">
-                                                <label class="custom-control-label" for="remove_logo">Hapus Logo Saat Ini</label>
-                                            </div>
+                                <div class="col-md-12 mt-3">
+                                    <div class="form-group">
+                                        <label for="logo">Upload Logo Baru (Opsional)</label>
+                                        <div class="custom-file">
+                                            <input type="file" class="custom-file-input <?= session('errors.logo') ? 'is-invalid' : '' ?>" id="logo" name="logo" accept="<?= $globalSettings['allowed_mime_types'] ?? 'image/png, image/jpeg' ?>">
+                                            <label class="custom-file-label" for="logo">Pilih file logo...</label>
                                         </div>
-                                    <?php endif; ?>
-                                    <div class="invalid-feedback">
-                                        <?= session('errors.logo') ?>
+                                        <input type="hidden" name="current_logo" value="<?= esc($settings['logo_path']) ?>">
+                                        <small class="form-text text-muted">Maks: <?= $globalSettings['max_file_size_kb'] ?>KB. Biarkan kosong jika tidak ingin mengubah logo.</small>
+                                        <?php if (!empty($settings['logo_path'])): ?>
+                                            <div class="mt-2">
+                                                <span class="badge badge-info">Logo saat ini terpasang</span>
+                                                <div class="custom-control custom-checkbox mt-1">
+                                                    <input type="checkbox" class="custom-control-input" id="remove_logo" name="remove_logo" value="1">
+                                                    <label class="custom-control-label" for="remove_logo">Hapus Logo Saat Ini</label>
+                                                </div>
+                                            </div>
+                                        <?php endif; ?>
+                                        <div class="invalid-feedback">
+                                            <?= session('errors.logo') ?>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
                             <?php else: ?>
                                 <?php if (!empty($globalSettings['default_logo_path'])): ?>
-                                <div class="col-md-12 mt-3">
-                                    <div class="alert alert-info">
-                                        <i class="fas fa-info-circle mr-1"></i> QR Code menggunakan logo default sekolah.
+                                    <div class="col-md-12 mt-3">
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-info-circle mr-1"></i> QR Code menggunakan logo default sekolah.
+                                        </div>
                                     </div>
-                                </div>
                                 <?php endif; ?>
                             <?php endif; ?>
-                            
+
                             <div class="col-md-12 mt-3">
                                 <div class="form-group">
                                     <label for="frame_style">Gaya Frame</label>
@@ -139,7 +141,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="col-lg-4">
             <!-- Preview Card -->
             <div class="card shadow mb-4 sticky-top" style="top: 100px; z-index: 100;">
@@ -180,28 +182,28 @@
             const formData = new FormData(form);
 
             fetch('<?= base_url('guru/qrcode/preview') ?>', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => {
-                if (!response.ok) throw new Error('Network response was not ok');
-                return response.blob();
-            })
-            .then(blob => {
-                const imageUrl = URL.createObjectURL(blob);
-                previewContainer.innerHTML = `<img src="${imageUrl}" class="img-fluid" style="max-height: 250px;">`;
-                previewContainer.style.display = 'flex';
-                loading.classList.add('d-none');
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                previewContainer.innerHTML = '<p class="text-danger small">Gagal memuat preview</p>';
-                previewContainer.style.display = 'flex';
-                loading.classList.add('d-none');
-            });
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.blob();
+                })
+                .then(blob => {
+                    const imageUrl = URL.createObjectURL(blob);
+                    previewContainer.innerHTML = `<img src="${imageUrl}" class="img-fluid" style="max-height: 250px;">`;
+                    previewContainer.style.display = 'flex';
+                    loading.classList.add('d-none');
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    previewContainer.innerHTML = '<p class="text-danger small">Gagal memuat preview</p>';
+                    previewContainer.style.display = 'flex';
+                    loading.classList.add('d-none');
+                });
         }
 
         // Initial preview
@@ -215,7 +217,7 @@
                 timeout = setTimeout(updatePreview, 800);
             });
         });
-        
+
         // Custom file input label
         document.querySelector('.custom-file-input').addEventListener('change', function(e) {
             var fileName = document.getElementById("logo").files[0].name;

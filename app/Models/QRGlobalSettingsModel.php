@@ -38,13 +38,22 @@ class QRGlobalSettingsModel extends Model
     public function getActiveSettings()
     {
         $settings = $this->first();
-        
+
         if (!$settings) {
+            // Check if logo.png exists in uploads/qr_logos or uploads/logos
+            $defaultLogo = null;
+            if (file_exists(FCPATH . 'uploads/qr_logos/logo.png')) {
+                $defaultLogo = 'uploads/qr_logos/logo.png';
+            } elseif (file_exists(FCPATH . 'uploads/logos/logo.png')) {
+                $defaultLogo = 'uploads/logos/logo.png';
+            }
+
             // Return defaults if no record exists (should not happen if migration ran)
             return [
                 'default_size'        => 300,
                 'default_color'       => '#000000',
                 'default_bg_color'    => '#FFFFFF',
+                'default_logo_path'   => $defaultLogo,
                 'allow_custom_logo'   => 1,
                 'allow_custom_colors' => 1,
                 'allow_custom_size'   => 1,
@@ -52,7 +61,7 @@ class QRGlobalSettingsModel extends Model
                 'allowed_mime_types'  => 'image/png,image/jpeg,image/gif',
             ];
         }
-        
+
         return $settings;
     }
 }
