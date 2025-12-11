@@ -359,6 +359,13 @@
             <p class="page-subtitle">
                 <i class="fas fa-school mr-2"></i>Tahun Ajaran <?= esc($tahun_ajaran) ?>
             </p>
+            <a href="<?= base_url('guru/kalender-mengajar/pdf?tahun_ajaran=' . urlencode($tahun_ajaran)) ?>"
+                class="btn btn-danger btn-sm mt-2"
+                target="_blank"
+                rel="noopener noreferrer">
+                <i class="fas fa-file-pdf mr-1"></i> Export PDF
+            </a>
+
         </div>
         <div>
             <form action="" method="get" class="d-flex align-items-center flex-wrap gap-2">

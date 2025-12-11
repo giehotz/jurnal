@@ -90,6 +90,21 @@ class KalenderMengajar extends BaseController
             $eventsByDate[$date][] = $k;
         }
 
+        if ($this->isMobile()) {
+            return view('mobile/guru/kalender_mengajar/index', [
+                'kalender' => $mergedKalender,
+                'weeks' => $weeks,
+                'events_by_date' => $eventsByDate,
+                'statistik' => $stats,
+                'bulan' => $bulan,
+                'tahun' => $tahun,
+                'tahun_ajaran' => $tahunAjaran,
+                'semester' => $semester,
+                'active' => 'kalender_mengajar',
+                'title' => 'Kalender Mengajar'
+            ]);
+        }
+
         return view('guru/kalender_mengajar/index', [
             'kalender' => $mergedKalender,
             'weeks' => $weeks,

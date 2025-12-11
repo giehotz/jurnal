@@ -34,7 +34,7 @@
             <div class="col-md-12">
                 <div class="custom-info-box">
                     <div class="custom-info-icon bg-emerald-soft">
-                        <i class="fas fa-users"></i>
+                        <i class="fas fa-users text-white"></i>
                     </div>
                     <div class="custom-info-content">
                         <span class="custom-info-label">Kelas Aktif</span>
@@ -43,7 +43,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Filter Card -->
         <div class="custom-card">
             <div class="custom-card-body">
@@ -73,7 +73,7 @@
                 </form>
             </div>
         </div>
-        
+
         <!-- Alert Hari Libur -->
         <?php if ($isHoliday): ?>
             <div class="alert alert-danger d-flex align-items-center" style="border-radius: var(--radius-md); background-color: #FEE2E2; color: #991B1B; border: 1px solid #FECACA;">
@@ -107,30 +107,31 @@
                             </thead>
                             <tbody>
                                 <?php if (!empty($detailAbsensi)): ?>
-                                    <?php $no = 1; foreach ($detailAbsensi as $d): ?>
+                                    <?php $no = 1;
+                                    foreach ($detailAbsensi as $d): ?>
                                         <tr>
                                             <td><?= $no++ ?></td>
                                             <td><?= date('d-m-Y', strtotime($d['tanggal'])) ?></td>
                                             <td><span class="font-weight-bold text-muted"><?= esc($d['nis']) ?></span></td>
                                             <td><span class="font-weight-bold"><?= esc($d['nama_siswa']) ?></span></td>
                                             <td>
-                                                <?php 
-                                                    switch($d['status']) {
-                                                        case 'hadir':
-                                                            echo '<span class="custom-badge badge-success-soft">Hadir</span>';
-                                                            break;
-                                                        case 'sakit':
-                                                            echo '<span class="custom-badge badge-warning-soft">Sakit</span>';
-                                                            break;
-                                                        case 'izin':
-                                                            echo '<span class="custom-badge badge-info-soft">Izin</span>';
-                                                            break;
-                                                        case 'alfa':
-                                                            echo '<span class="custom-badge badge-danger-soft">Alfa</span>';
-                                                            break;
-                                                        default:
-                                                            echo '<span class="custom-badge bg-slate-soft">' . esc($d['status']) . '</span>';
-                                                    }
+                                                <?php
+                                                switch ($d['status']) {
+                                                    case 'hadir':
+                                                        echo '<span class="custom-badge badge-success-soft">Hadir</span>';
+                                                        break;
+                                                    case 'sakit':
+                                                        echo '<span class="custom-badge badge-warning-soft">Sakit</span>';
+                                                        break;
+                                                    case 'izin':
+                                                        echo '<span class="custom-badge badge-info-soft">Izin</span>';
+                                                        break;
+                                                    case 'alfa':
+                                                        echo '<span class="custom-badge badge-danger-soft">Alfa</span>';
+                                                        break;
+                                                    default:
+                                                        echo '<span class="custom-badge bg-slate-soft">' . esc($d['status']) . '</span>';
+                                                }
                                                 ?>
                                             </td>
                                             <td><?= esc($d['keterangan']) ?></td>

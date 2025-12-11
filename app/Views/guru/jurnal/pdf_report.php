@@ -59,7 +59,7 @@ function formatHari($tanggal)
         .header {
             text-align: center;
             margin-bottom: 30px;
-            border-bottom: 5px solid #000000ff;
+            border-bottom: 5px solid #000000;
             padding-bottom: 20px;
         }
 
@@ -72,7 +72,7 @@ function formatHari($tanggal)
         .header p {
             margin: 4px 0;
             font-size: 12px;
-            color: #000000ff;
+            color: #000000;
         }
 
         /* Bagian Info Guru - Didesain ulang */
@@ -99,7 +99,7 @@ function formatHari($tanggal)
 
         th,
         td {
-            border: 1px solid #000000ff;
+            border: 1px solid #000000;
             /* Border lebih soft */
             padding: 10px 12px;
             /* Padding lebih besar */
@@ -224,21 +224,57 @@ function formatHari($tanggal)
 
     <div class="container">
         <div class="header">
-            <h1>LAPORAN JURNAL MENGAJAR</h1>
-            <?php if (isset($school_settings['nama_sekolah'])): ?>
-                <p><?= esc($school_settings['nama_sekolah']) ?></p>
-            <?php elseif (isset($school_settings['school_name'])): ?>
-                <p><?= esc($school_settings['school_name']) ?></p>
-            <?php endif; ?>
-            <p>
-                <?php if (isset($school_settings['school_year'])): ?>
-                    Tahun Pelajaran: <?= esc($school_settings['school_year']) ?>
-                <?php endif; ?>
-                <?php if (isset($school_settings['semester'])): ?>
-                    Semester: <?= esc($school_settings['semester']) ?>
-                <?php endif; ?>
-            </p>
-            <p>Periode: <?= date('d F Y', strtotime($tanggal_awal)) ?> - <?= date('d F Y', strtotime($tanggal_akhir)) ?></p>
+            <table style="width: 100%; border: none;">
+                <tr style="border: none;">
+                    <?php
+                    // Determine logo path and embed as Base64 to prevent ALL deadlock/path issues
+                    $logoSrc = null;
+                    if (!empty($school_settings['logo'])) {
+                        $absolutePath = FCPATH . 'uploads/logos/' . $school_settings['logo'];
+                        if (file_exists($absolutePath)) {
+                            $type = pathinfo($absolutePath, PATHINFO_EXTENSION);
+                            $data = file_get_contents($absolutePath);
+                            if ($data !== false) {
+                                $base64 = base64_encode($data);
+                                $logoSrc = 'data:image/' . $type . ';base64,' . $base64;
+                            }
+                        }
+                    }
+                    ?>
+
+                    <?php if ($logoSrc): ?>
+                        <td style="width: 80px; text-align: left; vertical-align: middle; border: none; padding-right: 15px;">
+                            <!-- Embed Base64 Image directly -->
+                            <img src="<?= $logoSrc ?>" style="width: 80px; height: auto;" alt="Logo">
+                        </td>
+                        <td style="text-align: center; vertical-align: middle; border: none;">
+                        <?php else: ?>
+                        <td style="text-align: center; vertical-align: middle; border: none;">
+                        <?php endif; ?>
+
+                        <h1 style="margin: 0; font-size: 20px;">LAPORAN JURNAL MENGAJAR</h1>
+                        <?php if (isset($school_settings['nama_sekolah'])): ?>
+                            <p style="margin: 2px 0; font-size: 14px; font-weight: bold;"><?= esc($school_settings['nama_sekolah']) ?></p>
+                        <?php elseif (isset($school_settings['school_name'])): ?>
+                            <p style="margin: 2px 0; font-size: 14px; font-weight: bold;"><?= esc($school_settings['school_name']) ?></p>
+                        <?php endif; ?>
+
+                        <?php if (isset($school_settings['school_address'])): ?>
+                            <p style="margin: 0; font-size: 11px;"><?= esc($school_settings['school_address']) ?></p>
+                        <?php endif; ?>
+
+                        <p style="margin: 5px 0 0 0; font-size: 12px; border-top: 1px solid #000; padding-top: 2px; display: inline-block;">
+                            <?php if (isset($school_settings['school_year'])): ?>
+                                Tahun Pelajaran: <?= esc($school_settings['school_year']) ?> |
+                            <?php endif; ?>
+                            <?php if (isset($school_settings['semester'])): ?>
+                                Semester: <?= esc(ucfirst($school_settings['semester'])) ?> |
+                            <?php endif; ?>
+                            Periode: <?= date('d/m/Y', strtotime($tanggal_awal)) ?> - <?= date('d/m/Y', strtotime($tanggal_akhir)) ?>
+                        </p>
+                        </td>
+                </tr>
+            </table>
         </div>
 
         <!-- Info Section (Struktur HTML diubah sesuai permintaan) -->
@@ -323,13 +359,33 @@ function formatHari($tanggal)
                 ];
             }
 
-            // Generate signature table using helper function
-            if (function_exists('generateSignatureTable')) {
-                echo generateSignatureTable($headmasterData, $teacherData);
-            } else {
-                // Fallback jika fungsi tidak ada (meskipun seharusnya ada di controller/helper)
-                echo '<p class="text-center">Error: Fungsi generateSignatureTable tidak ditemukan.</p>';
-            }
+            // Manual Signature Table to ensure NO BORDERS
+            ?>
+            <table cellspacing="0" cellpadding="0" style="width: 100%; border: none !important; margin-top: 20px;">
+                <tr style="border: none !important;">
+                    <!-- Kepala Sekolah (Left) -->
+                    <td style="border: none !important; width: 40%; text-align: center; vertical-align: top;">
+                        <p style="margin: 0;">Mengetahui,</p>
+                        <p style="margin: 0;">Kepala Sekolah</p>
+                        <br><br><br><br>
+                        <p style="text-decoration: underline; font-weight: bold; margin: 0;"><?= esc($headmasterData['nama'] ?? '........................................') ?></p>
+                        <p style="margin: 0;">NIP. <?= esc($headmasterData['nip'] ?? '..............................') ?></p>
+                    </td>
+
+                    <!-- Spacer -->
+                    <td style="border: none !important; width: 20%;"></td>
+
+                    <!-- Guru (Right) -->
+                    <td style="border: none !important; width: 40%; text-align: center; vertical-align: top;">
+                        <p style="margin: 0;">Guru Mata Pelajaran,</p>
+                        <br><br><br><br>
+                        <p style="text-decoration: underline; font-weight: bold; margin: 0;"><?= esc($teacherData['nama'] ?? '........................................') ?></p>
+                        <p style="margin: 0;">NIP. <?= esc($teacherData['nip'] ?? '..............................') ?></p>
+                    </td>
+                </tr>
+            </table>
+            <?php
+            // End Signature
             ?>
         </div>
     </div>

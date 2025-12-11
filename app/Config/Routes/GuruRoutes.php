@@ -75,6 +75,7 @@ function guruRoutes(RouteCollection $routes)
 
         // Kalender Mengajar
         $routes->get('kalender-mengajar', 'Guru\KalenderMengajar::index');
+        $routes->get('kalender-mengajar/pdf', 'Guru\KalenderMengajarPdf::download');
         $routes->get('kalender-mengajar/detail-tanggal/(:any)', 'Guru\KalenderMengajar::detailTanggal/$1');
     });
 }

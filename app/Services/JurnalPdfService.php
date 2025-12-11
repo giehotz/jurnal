@@ -67,11 +67,11 @@ class JurnalPdfService
     {
         // Parse dates
         $dates = $this->parseDates($filters);
-        
+
         if (isset($dates['error'])) {
             throw new \Exception($dates['error']);
         }
-        
+
         $formattedTanggalAwal = $dates['start'];
         $formattedTanggalAkhir = $dates['end'];
 
@@ -91,7 +91,7 @@ class JurnalPdfService
         // and there's only one teacher in the results, use that teacher's name
         if (!empty($jurnals) && ($role === 'admin' || $userData['is_wali_kelas'])) {
             $uniqueTeachers = $this->getUniqueTeachers($jurnals);
-            
+
             // If there's only one unique teacher in the results, use their info
             if (count($uniqueTeachers) == 1) {
                 $teacherInfo = reset($uniqueTeachers);
@@ -142,7 +142,7 @@ class JurnalPdfService
     private function createPdfInstance()
     {
         $options = new \Dompdf\Options();
-        $options->set('isRemoteEnabled', true);
+        $options->set('isRemoteEnabled', false);
         return new \Dompdf\Dompdf($options);
     }
 
@@ -305,7 +305,7 @@ class JurnalPdfService
     {
         // Trim whitespace to avoid accidental spaces
         $dateString = trim($dateString);
-        
+
         $formats = [
             'Y-m-d',      // 2025-01-11
             'm/d/Y',      // 01/11/2025

@@ -41,7 +41,7 @@ class Jurnal extends BaseController
         $this->jurnalDetailModel = new JurnalDetailModel();
         $this->settingModel = new SettingModel();
         $this->db = \Config\Database::connect();
-        
+
         // Initialize services
         $this->jurnalLibrary = new JurnalLibrary(service('validation'));
         $this->jurnalQueryService = new JurnalQueryService($this->jurnalModel, $this->rombelModel, $this->mapelModel); // Diubah dari kelasModel
@@ -57,13 +57,13 @@ class Jurnal extends BaseController
         }
 
         $userId = session()->get('user_id');
-        
+
         // Ambil data jurnal dengan detail
         $jurnals = $this->jurnalModel->getJurnalWithDetails($userId); // Diubah untuk menggunakan method baru
-        
+
         // Cek apakah user adalah wali kelas
         $isWaliKelas = $this->rombelModel->where('wali_kelas', $userId)->first(); // Diubah dari kelasModel
-        
+
         $data = [
             'title' => 'Daftar Jurnal Mengajar',
             'active' => 'jurnal',
@@ -84,34 +84,34 @@ class Jurnal extends BaseController
     {
         // Menampilkan form tambah jurnal
         helper(['form']);
-        
+
         $formOptions = $this->jurnalQueryService->getFormOptions();
-        
+
         $data['rombel'] = $formOptions['kelas']; // Diubah dari kelas
         $data['mapel'] = $formOptions['mapel'];
-        
+
         // Ambil jurnal terakhir untuk ditampilkan
         $userId = session()->get('user_id');
         // Pre-fill data if parameters exist
         $selectedRombel = $this->request->getGet('rombel_id');
         $selectedTanggal = $this->request->getGet('tanggal') ?? date('Y-m-d');
         $jumlahHadir = 0;
-        
+
         if ($selectedRombel && $selectedTanggal) {
             $rekapHarianModel = new \App\Models\RekapAbsensiHarianModel();
             $rekap = $rekapHarianModel->where('rombel_id', $selectedRombel)
-                                      ->where('tanggal', $selectedTanggal)
-                                      ->first();
+                ->where('tanggal', $selectedTanggal)
+                ->first();
             if ($rekap) {
                 $jumlahHadir = $rekap['total_hadir'];
                 // Use total_siswa from rekap if available
-                $totalSiswa = $rekap['total_siswa']; 
+                $totalSiswa = $rekap['total_siswa'];
             } else {
                 // Jika belum ada rekap, hitung dari data siswa aktif
                 $siswaModel = new \App\Models\SiswaModel();
                 $totalSiswa = $siswaModel->where('rombel_id', $selectedRombel)
-                                        ->where('is_active', 1)
-                                        ->countAllResults();
+                    ->where('is_active', 1)
+                    ->countAllResults();
             }
         } else {
             $totalSiswa = 0;
@@ -121,7 +121,7 @@ class Jurnal extends BaseController
         $data['selected_tanggal'] = $selectedTanggal;
         $data['jumlah_hadir'] = $jumlahHadir;
         $data['total_siswa'] = $totalSiswa;
-        
+
         $data['recent_jurnal'] = $this->jurnalModel
             ->select('jurnal_new.*, rombel.nama_rombel, rombel.kode_rombel, mata_pelajaran.nama_mapel')
             ->join('rombel', 'rombel.id = jurnal_new.rombel_id')
@@ -132,11 +132,11 @@ class Jurnal extends BaseController
             ->orderBy('created_at', 'DESC')
             ->limit(5)
             ->findAll();
-        
+
         if ($this->isMobile()) {
             return view('mobile/guru/jurnal/create', $data);
         }
-        
+
         return view('guru/jurnal/create', $data);
     }
 
@@ -144,30 +144,30 @@ class Jurnal extends BaseController
     {
         // Menampilkan form edit jurnal
         helper(['form']);
-        
+
         $userId = session()->get('user_id');
-        
+
         // Cek apakah jurnal ditemukan dan dimiliki oleh user
         $jurnal = $this->jurnalQueryService->getJurnalForEdit($id);
-        
+
         if (!$jurnal) {
             throw new \CodeIgniter\Exceptions\PageNotFoundException('Jurnal dengan ID ' . $id . ' tidak ditemukan.');
         }
-        
+
         // Cek apakah user memiliki akses ke jurnal ini
         if ($jurnal['user_id'] != $userId) {
             return redirect()->to('/guru/jurnal')->with('error', 'Anda tidak memiliki akses ke jurnal ini.');
         }
-        
+
         $formOptions = $this->jurnalQueryService->getFormOptions();
         $data['jurnal'] = $jurnal;
         $data['rombel'] = $formOptions['kelas']; // Diubah dari kelas
         $data['mapel'] = $formOptions['mapel'];
-        
+
         if ($this->isMobile()) {
             return view('mobile/guru/jurnal/edit', $data);
         }
-        
+
         return view('guru/jurnal/edit', $data);
     }
 
@@ -187,31 +187,31 @@ class Jurnal extends BaseController
 
         // Validate input (Use global request to include FILES)
         $validationResult = $this->jurnalLibrary->validateInput();
-        
+
         if ($validationResult !== true) {
-             // Log validation errors
+            // Log validation errors
             log_message('error', '[Jurnal::update] Validation failed: ' . json_encode($validationResult));
-            
+
             // Set flashdata error for the view
             $errorMsg = 'Validasi gagal: ' . implode(', ', $validationResult);
             session()->setFlashdata('error', $errorMsg);
-            
+
             return redirect()->back()->withInput();
         }
 
         // Validate File separately
         $fileValidation = $this->jurnalLibrary->validateFile();
         if ($fileValidation !== true) {
-             // Log validation errors
-             log_message('error', '[Jurnal::update] File Validation failed: ' . json_encode($fileValidation));
-             
-             // Set flashdata error for the view
-             $errorMsg = 'Validasi file gagal: ' . implode(', ', $fileValidation);
-             session()->setFlashdata('error', $errorMsg);
-             
-             return redirect()->back()->withInput();
+            // Log validation errors
+            log_message('error', '[Jurnal::update] File Validation failed: ' . json_encode($fileValidation));
+
+            // Set flashdata error for the view
+            $errorMsg = 'Validasi file gagal: ' . implode(', ', $fileValidation);
+            session()->setFlashdata('error', $errorMsg);
+
+            return redirect()->back()->withInput();
         }
-        
+
         try {
             $data = [
                 'tanggal' => $this->request->getPost('tanggal'),
@@ -224,7 +224,7 @@ class Jurnal extends BaseController
                 'keterangan' => $this->request->getPost('keterangan'),
                 'status' => $this->request->getPost('status'),
             ];
-            
+
             // Handle File Upload
             $file = $this->request->getFile('bukti_dukung');
             if ($file && $file->isValid() && !$file->hasMoved()) {
@@ -233,7 +233,7 @@ class Jurnal extends BaseController
                     $data['bukti_dukung'] = $fileName;
                 }
             }
-            
+
             // Simpan data jurnal
             if ($this->jurnalModel->update($id, $data)) {
                 return redirect()->to('/guru/jurnal')->with('success', 'Jurnal berhasil diupdate.');
@@ -257,7 +257,7 @@ class Jurnal extends BaseController
         if (!$rombelId || !$tanggal) {
             return $this->response->setJSON(['status' => 'error', 'message' => 'Rombel dan tanggal harus diisi']); // Diubah dari Kelas
         }
-        
+
         $availableHours = $this->jurnalQueryService->getAvailableHours($rombelId, $tanggal, $editJurnalId); // Diubah dari kelasId
 
         return $this->response->setJSON([
@@ -277,17 +277,17 @@ class Jurnal extends BaseController
         $json = $this->request->getJSON(true);
         $rombelId = $json['rombel_id'] ?? $this->request->getPost('rombel_id');
         $tanggal = $json['tanggal'] ?? $this->request->getPost('tanggal');
-        
+
         if (!$rombelId || !$tanggal) {
             return $this->response->setJSON(['status' => 'error', 'message' => 'Rombel dan tanggal harus diisi']);
         }
-        
+
         // Use RekapAbsensiHarianModel for instant lookup
         $rekapHarianModel = new \App\Models\RekapAbsensiHarianModel();
         $rekap = $rekapHarianModel->where('rombel_id', $rombelId)
-                                  ->where('tanggal', $tanggal)
-                                  ->first();
-            
+            ->where('tanggal', $tanggal)
+            ->first();
+
         if ($rekap) {
             return $this->response->setJSON([
                 'status' => 'success',
@@ -312,8 +312,8 @@ class Jurnal extends BaseController
                 // Get total siswa from SiswaModel to be accurate
                 $siswaModel = new \App\Models\SiswaModel();
                 $totalSiswa = $siswaModel->where('rombel_id', $rombelId)
-                                        ->where('is_active', 1)
-                                        ->countAllResults();
+                    ->where('is_active', 1)
+                    ->countAllResults();
 
                 return $this->response->setJSON([
                     'status' => 'success',
@@ -328,9 +328,9 @@ class Jurnal extends BaseController
             // Jika benar-benar tidak ada
             $siswaModel = new \App\Models\SiswaModel();
             $totalSiswa = $siswaModel->where('rombel_id', $rombelId)
-                                    ->where('is_active', 1)
-                                    ->countAllResults();
-            
+                ->where('is_active', 1)
+                ->countAllResults();
+
             return $this->response->setJSON([
                 'status' => 'warning',
                 'data' => [
@@ -359,7 +359,7 @@ class Jurnal extends BaseController
         // Cek apakah absensi sudah terisi untuk kelas dan tanggal ini
         $rombelId = $this->request->getPost('rombel_id');
         $tanggal = $this->request->getPost('tanggal');
-        
+
         // Cek via rekap absensi harian
         $rekapHarianModel = new \App\Models\RekapAbsensiHarianModel();
         $absensiExists = $rekapHarianModel
@@ -374,7 +374,7 @@ class Jurnal extends BaseController
                 ->where('rombel_id', $rombelId)
                 ->where('tanggal', $tanggal)
                 ->countAllResults();
-            
+
             if ($absensiCount > 0) {
                 $absensiExists = true;
             }
@@ -385,20 +385,22 @@ class Jurnal extends BaseController
                 ->withInput()
                 ->with('error', 'Harap lakukan absensi terlebih dahulu untuk kelas ini pada tanggal tersebut.');
         }
-        
+
         // Validate input (Use global request to include FILES)
         $validationResult = $this->jurnalLibrary->validateInput();
-        
+
         if ($validationResult !== true) {
             // Log validation errors
             log_message('error', '[Jurnal::store] Validation failed: ' . json_encode($validationResult));
-            
+
             // Set flashdata error for the view
             $errorMsg = 'Validasi gagal: ' . implode(', ', $validationResult);
             session()->setFlashdata('error', $errorMsg);
 
             $formOptions = $this->jurnalQueryService->getFormOptions();
-            $data['validation'] = (object)['getErrors' => function() use ($validationResult) { return $validationResult; }];
+            $data['validation'] = (object)['getErrors' => function () use ($validationResult) {
+                return $validationResult;
+            }];
             $data['rombel'] = $formOptions['kelas'];
             $data['mapel'] = $formOptions['mapel'];
             $data['recent_jurnal'] = $this->jurnalModel
@@ -411,34 +413,34 @@ class Jurnal extends BaseController
                 ->orderBy('created_at', 'DESC')
                 ->limit(5)
                 ->findAll();
-            
+
             if ($this->isMobile()) {
                 return view('mobile/guru/jurnal/create', $data);
             }
-            
+
             return view('guru/jurnal/create', $data);
         }
 
         // Validate File separately
         $fileValidation = $this->jurnalLibrary->validateFile();
         if ($fileValidation !== true) {
-             // Log validation errors
-             log_message('error', '[Jurnal::store] File Validation failed: ' . json_encode($fileValidation));
-             
-             // Set flashdata error for the view
-             $errorMsg = 'Validasi file gagal: ' . implode(', ', $fileValidation);
-             session()->setFlashdata('error', $errorMsg);
-             
-             return redirect()->back()->withInput();
+            // Log validation errors
+            log_message('error', '[Jurnal::store] File Validation failed: ' . json_encode($fileValidation));
+
+            // Set flashdata error for the view
+            $errorMsg = 'Validasi file gagal: ' . implode(', ', $fileValidation);
+            session()->setFlashdata('error', $errorMsg);
+
+            return redirect()->back()->withInput();
         }
-        
+
         try {
             // Ambil jumlah peserta dari rekap harian untuk konsistensi
             // Kita sudah cek eksistensi di atas, jadi aman untuk ambil datanya
             $rekap = $rekapHarianModel->where('rombel_id', $this->request->getPost('rombel_id'))
-                                      ->where('tanggal', $this->request->getPost('tanggal'))
-                                      ->first();
-            
+                ->where('tanggal', $this->request->getPost('tanggal'))
+                ->first();
+
             if ($rekap) {
                 $jumlahPeserta = $rekap['total_hadir'];
             } else {
@@ -480,11 +482,10 @@ class Jurnal extends BaseController
                 log_message('error', '[Jurnal::store] Model save failed: ' . json_encode($dbErrors));
                 throw new \Exception('Gagal menyimpan data ke database: ' . implode(', ', $dbErrors));
             }
-            
-            $jurnalId = $this->jurnalModel->insertID();
-            
-            return redirect()->to('/guru/jurnal/view/' . $jurnalId)->with('success', 'Jurnal berhasil disimpan');
 
+            $jurnalId = $this->jurnalModel->insertID();
+
+            return redirect()->to('/guru/jurnal/view/' . $jurnalId)->with('success', 'Jurnal berhasil disimpan');
         } catch (\Exception $e) {
             log_message('error', '[Jurnal::store] Exception: ' . $e->getMessage());
             return redirect()->back()->withInput()->with('error', 'Terjadi kesalahan sistem: ' . $e->getMessage());
@@ -522,7 +523,7 @@ class Jurnal extends BaseController
         // Cek apakah ini adalah data Absensi (bukan Jurnal Mengajar)
         // Jika ya, redirect ke halaman Absensi atau tolak akses
         if ($jurnal['mapel_id'] == 18 || $jurnal['materi'] == 'Absensi Kelas') {
-             return redirect()->to('/guru/jurnal')->with('error', 'Data ini adalah data Absensi, silakan akses melalui menu Absensi.');
+            return redirect()->to('/guru/jurnal')->with('error', 'Data ini adalah data Absensi, silakan akses melalui menu Absensi.');
         }
 
         // Ambil data absensi terkait
@@ -554,22 +555,22 @@ class Jurnal extends BaseController
     {
         // Hapus jurnal
         $userId = session()->get('user_id');
-        
+
         $jurnal = $this->jurnalModel->find($id);
-        
+
         if (!$jurnal) {
             throw new \CodeIgniter\Exceptions\PageNotFoundException('Jurnal dengan ID ' . $id . ' tidak ditemukan.');
         }
-        
+
         // Cek apakah user memiliki akses ke jurnal ini
         if ($jurnal['user_id'] != $userId) {
             return redirect()->to('/guru/jurnal')->with('error', 'Anda tidak memiliki akses ke jurnal ini.');
         }
-        
+
         // Hapus data terkait
         // $this->absensiModel->where('jurnal_id', $id)->delete(); // REMOVED: Absensi is now independent
         // $this->jurnalDetailModel->where('jurnal_id', $id)->delete();
-        
+
         // Hapus jurnal
         if ($this->jurnalModel->delete($id)) {
             return redirect()->to('/guru/jurnal')->with('success', 'Jurnal berhasil dihapus.');
@@ -586,7 +587,7 @@ class Jurnal extends BaseController
     {
         $rombel_id = $this->request->getPost('rombel_id'); // Diubah dari kelas_id
         $siswa = $this->siswaModel->getSiswaByRombel($rombel_id); // Diubah dari getSiswaByKelas
-        
+
         // Format data untuk response JSON
         $formattedSiswa = [];
         foreach ($siswa as $s) {
@@ -596,7 +597,7 @@ class Jurnal extends BaseController
                 'siswa_nama' => $s['nama']
             ];
         }
-        
+
         return $this->response->setJSON($formattedSiswa);
     }
 
@@ -635,7 +636,7 @@ class Jurnal extends BaseController
         $role = session()->get('role');
         return in_array($role, ['admin', 'super_admin']);
     }
-    
+
     /**
      * Menampilkan form untuk generate PDF
      */
@@ -645,15 +646,15 @@ class Jurnal extends BaseController
         if (!session()->get('logged_in') || session()->get('role') !== 'guru') {
             return redirect()->to('/auth/login');
         }
-        
+
         $data = [
             'title' => 'Generate Laporan PDF',
             'active' => 'jurnal'
         ];
-        
+
         return view('guru/jurnal/generate_pdf', $data);
     }
-    
+
     /**
      * Mengekspor jurnal ke PDF berdasarkan filter bulan
      */
@@ -663,19 +664,19 @@ class Jurnal extends BaseController
         if (!session()->get('logged_in') || session()->get('role') !== 'guru') {
             return redirect()->to('/auth/login');
         }
-        
+
         $userId = session()->get('user_id');
         $role = session()->get('role');
-        
+
         // Ambil data dari form
         $bulanAwal = $this->request->getPost('bulan_awal');
         $bulanAkhir = $this->request->getPost('bulan_akhir');
         $tahun = $this->request->getPost('tahun') ?? date('Y');
-        
+
         if (!$bulanAwal || !$bulanAkhir) {
             return redirect()->back()->with('error', 'Bulan awal dan bulan akhir harus dipilih.');
         }
-        
+
         try {
             // Siapkan filter
             $filters = [
@@ -683,29 +684,28 @@ class Jurnal extends BaseController
                 'bulan_akhir' => $bulanAkhir,
                 'tahun' => $tahun
             ];
-            
+
             // Ambil data user
             $userModel = new \App\Models\UserModel();
             $userData = $userModel->find($userId);
-            
+
             // Tambahkan informasi apakah user adalah wali kelas
             $rombelModel = new \App\Models\RombelModel();
             $kelasWali = $rombelModel->where('wali_kelas', $userId)->first();
             $userData['is_wali_kelas'] = $kelasWali ? true : false;
             $userData['kelas_wali'] = $kelasWali;
-            
+
             // Generate PDF
             $pdfContent = $this->jurnalPdfService->generateReportPdf($filters, $userId, $role, $userData);
-            
+
             // Set nama file
             $fileName = 'jurnal_mengajar_' . $userData['nama'] . '_' . $bulanAwal . '-' . $bulanAkhir . '_' . $tahun . '.pdf';
-            
+
             // Return PDF sebagai response
             return $this->response
                 ->setHeader('Content-Type', 'application/pdf')
-                ->setHeader('Content-Disposition', 'attachment; filename="' . $fileName . '"')
+                ->setHeader('Content-Disposition', 'inline; filename="' . $fileName . '"')
                 ->setBody($pdfContent);
-                
         } catch (\Exception $e) {
             return redirect()->back()->with('error', $e->getMessage());
         }
