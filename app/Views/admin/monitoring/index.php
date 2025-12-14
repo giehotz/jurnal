@@ -16,10 +16,12 @@
         justify-content: space-between;
         transition: transform 0.2s;
     }
+
     .monitoring-stat-card:hover {
         transform: translateY(-2px);
         box-shadow: var(--shadow-md);
     }
+
     .stat-icon-wrapper {
         width: 48px;
         height: 48px;
@@ -30,6 +32,7 @@
         font-size: 1.5rem;
         margin-bottom: var(--spacing-md);
     }
+
     .stat-value {
         font-family: 'Outfit', sans-serif;
         font-size: 2rem;
@@ -38,6 +41,7 @@
         line-height: 1;
         margin-bottom: var(--spacing-xs);
     }
+
     .stat-label {
         color: var(--text-muted);
         font-size: 0.875rem;
@@ -53,6 +57,21 @@
         <div>
             <h1 class="m-0" style="font-family: 'Outfit', sans-serif; font-weight: 700; color: var(--text-main);">Monitoring</h1>
             <p class="text-muted m-0">Pantau aktivitas jurnal dan absensi secara real-time</p>
+        </div>
+        <div>
+            <div class="btn-group">
+                <button type="button" class="custom-btn custom-btn-info dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-download"></i> Export
+                </button>
+                <div class="dropdown-menu dropdown-menu-right" style="border: 1px solid #E2E8F0; border-radius: var(--radius-md); box-shadow: var(--shadow-lg);">
+                    <a class="dropdown-item py-2" href="<?= base_url('admin/monitoring/export/pdf') . '?' . $_SERVER['QUERY_STRING'] ?>">
+                        <i class="fas fa-file-pdf text-danger mr-2"></i> Export PDF
+                    </a>
+                    <a class="dropdown-item py-2" href="<?= base_url('admin/monitoring/export/excel') . '?' . $_SERVER['QUERY_STRING'] ?>">
+                        <i class="fas fa-file-excel text-success mr-2"></i> Export Excel
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -88,21 +107,7 @@
                             </a>
                         </div>
                     </div>
-                    <div class="col-md-3 text-right ml-auto">
-                        <div class="btn-group">
-                            <button type="button" class="custom-btn custom-btn-info dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-download"></i> Export
-                            </button>
-                            <div class="dropdown-menu dropdown-menu-right" style="border: 1px solid #E2E8F0; border-radius: var(--radius-md); box-shadow: var(--shadow-lg);">
-                                <a class="dropdown-item py-2" href="<?= base_url('admin/monitoring/export/pdf') . '?' . $_SERVER['QUERY_STRING'] ?>">
-                                    <i class="fas fa-file-pdf text-danger mr-2"></i> Export PDF
-                                </a>
-                                <a class="dropdown-item py-2" href="<?= base_url('admin/monitoring/export/excel') . '?' . $_SERVER['QUERY_STRING'] ?>">
-                                    <i class="fas fa-file-excel text-success mr-2"></i> Export Excel
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+
                 </div>
             </form>
         </div>
@@ -229,10 +234,12 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php if(empty($rekap_kehadiran)): ?>
-                                    <tr><td colspan="7" class="text-center py-4 text-muted">Tidak ada data</td></tr>
+                                <?php if (empty($rekap_kehadiran)): ?>
+                                    <tr>
+                                        <td colspan="7" class="text-center py-4 text-muted">Tidak ada data</td>
+                                    </tr>
                                 <?php else: ?>
-                                    <?php foreach($rekap_kehadiran as $row): ?>
+                                    <?php foreach ($rekap_kehadiran as $row): ?>
                                         <tr>
                                             <td><span class="font-weight-bold"><?= $row['nama_rombel'] ?></span></td>
                                             <td><span class="custom-badge badge-success-soft"><?= $row['total_hadir'] ?></span></td>
@@ -240,11 +247,11 @@
                                             <td><span class="custom-badge badge-info-soft"><?= $row['total_izin'] ?></span></td>
                                             <td><span class="custom-badge badge-danger-soft"><?= $row['total_alfa'] ?></span></td>
                                             <td>
-                                                <?php 
-                                                    $pct = round($row['avg_persentase'], 1);
-                                                    $badgeClass = 'badge-success-soft';
-                                                    if($pct < 60) $badgeClass = 'badge-danger-soft';
-                                                    elseif($pct < 80) $badgeClass = 'badge-warning-soft';
+                                                <?php
+                                                $pct = round($row['avg_persentase'], 1);
+                                                $badgeClass = 'badge-success-soft';
+                                                if ($pct < 60) $badgeClass = 'badge-danger-soft';
+                                                elseif ($pct < 80) $badgeClass = 'badge-warning-soft';
                                                 ?>
                                                 <span class="custom-badge <?= $badgeClass ?>"><?= $pct ?>%</span>
                                             </td>
@@ -281,10 +288,12 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php if(empty($rekap_jurnal_harian)): ?>
-                                    <tr><td colspan="4" class="text-center py-4 text-muted">Tidak ada data</td></tr>
+                                <?php if (empty($rekap_jurnal_harian)): ?>
+                                    <tr>
+                                        <td colspan="4" class="text-center py-4 text-muted">Tidak ada data</td>
+                                    </tr>
                                 <?php else: ?>
-                                    <?php foreach($rekap_jurnal_harian as $row): ?>
+                                    <?php foreach ($rekap_jurnal_harian as $row): ?>
                                         <tr>
                                             <td><?= date('d M Y', strtotime($row['tanggal'])) ?></td>
                                             <td><span class="font-weight-bold"><?= $row['total_jurnal'] ?></span></td>
@@ -317,18 +326,22 @@
                                     <th>Mata Pelajaran</th>
                                     <th>Jurnal Dibuat</th>
                                     <th>Absensi Diisi</th>
+                                    <th>Hari Absen</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php if(empty($guru_aktif)): ?>
-                                    <tr><td colspan="4" class="text-center py-4 text-muted">Tidak ada data</td></tr>
+                                <?php if (empty($guru_aktif)): ?>
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4 text-muted">Tidak ada data</td>
+                                    </tr>
                                 <?php else: ?>
-                                    <?php foreach($guru_aktif as $row): ?>
+                                    <?php foreach ($guru_aktif as $row): ?>
                                         <tr>
                                             <td><span class="font-weight-bold text-primary"><?= $row['nama'] ?></span></td>
                                             <td><?= $row['mata_pelajaran'] ?></td>
                                             <td><span class="custom-badge badge-info-soft"><?= $row['total_jurnal'] ?></span></td>
                                             <td><span class="custom-badge badge-success-soft"><?= $row['total_absensi'] ?></span></td>
+                                            <td><span class="custom-badge badge-warning-soft"><?= $row['total_hari_absen'] ?> Hari</span></td>
                                         </tr>
                                     <?php endforeach; ?>
                                 <?php endif; ?>
@@ -349,7 +362,7 @@
     $(document).ready(function() {
         // Toggle Custom Date Inputs
         $('#rangeSelect').change(function() {
-            if($(this).val() == 'custom') {
+            if ($(this).val() == 'custom') {
                 $('.custom-date').show();
             } else {
                 $('.custom-date').hide();

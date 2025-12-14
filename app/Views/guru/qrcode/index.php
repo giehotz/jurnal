@@ -137,14 +137,15 @@
             $('#previewModalLabel').html('<i class="fas fa-file-alt mr-2"></i>Preview: ' + title);
 
             // Show loading, hide frame
-            $('#loadingPreview').show();
+            // Show loading, hide frame
+            $('#loadingPreview').addClass('d-flex').show();
             $('#previewFrame').hide();
             $('#previewFrame').attr('src', url);
 
             $('#previewModal').modal('show');
 
             $('#previewFrame').on('load', function() {
-                $('#loadingPreview').hide();
+                $('#loadingPreview').removeClass('d-flex').hide();
                 $('#previewFrame').show();
             });
         });

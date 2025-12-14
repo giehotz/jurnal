@@ -40,6 +40,12 @@ function adminRoutes(RouteCollection $routes)
         $routes->post('pindah-kelas/get-siswa-by-rombel', 'Admin\PindahKelas::getSiswaByRombel');
         $routes->post('pindah-kelas/move-students', 'Admin\PindahKelas::moveStudents');
 
+        // Kenaikan Kelas
+        $routes->get('kenaikan-kelas', 'Admin\KenaikanKelas::index');
+        $routes->post('kenaikan-kelas/get-rombel', 'Admin\KenaikanKelas::getRombel');
+        $routes->post('kenaikan-kelas/get-siswa', 'Admin\KenaikanKelas::getSiswa');
+        $routes->post('kenaikan-kelas/process', 'Admin\KenaikanKelas::process');
+
         // Class Management
         $routes->get('kelas', 'Admin\Kelas::index');
         $routes->get('kelas/create', 'Admin\Kelas::create');

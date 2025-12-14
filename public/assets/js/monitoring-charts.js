@@ -28,7 +28,7 @@ window.MonitoringCharts = {
 
         this.setupDefaults();
 
-        if (data.dailyActivity && Array.isArray(data.dailyActivity) && data.dailyActivity.length > 0) {
+        if (data.dailyActivity && Array.isArray(data.dailyActivity)) {
             this.initDailyActivityChart(data.dailyActivity);
         } else {
             console.warn('No valid dailyActivity data found');
@@ -40,13 +40,13 @@ window.MonitoringCharts = {
             console.warn('No valid studentAttendance data found');
         }
 
-        if (data.classAttendance && Array.isArray(data.classAttendance) && data.classAttendance.length > 0) {
+        if (data.classAttendance && Array.isArray(data.classAttendance)) {
             this.initClassAttendanceChart(data.classAttendance);
         } else {
             console.warn('No valid classAttendance data found');
         }
 
-        if (data.monthlyTrend && Array.isArray(data.monthlyTrend) && data.monthlyTrend.length > 0) {
+        if (data.monthlyTrend && Array.isArray(data.monthlyTrend)) {
             this.initMonthlyTrendChart(data.monthlyTrend);
         } else {
             console.warn('No valid monthlyTrend data found');
@@ -207,8 +207,8 @@ window.MonitoringCharts = {
 
         console.log('Rendering Class Attendance Chart', data);
 
-        if (!Array.isArray(data) || data.length === 0) {
-            console.warn('Class Attendance data is empty');
+        if (!Array.isArray(data)) {
+            console.warn('Class Attendance data is not an array');
             return;
         }
 

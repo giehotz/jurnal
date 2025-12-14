@@ -71,16 +71,16 @@ class Monitoring extends BaseController
             ->where('tanggal >=', $startDate)
             ->where('tanggal <=', $endDate)
             ->get()->getRow()->total;
-            
+
         // Calculate Attendance Rate (Directly from absensi table)
         $attendanceStats = $this->db->table('absensi')
             ->select('COUNT(*) as total, COUNT(CASE WHEN status = "hadir" THEN 1 END) as hadir')
             ->where('tanggal >=', $startDate)
             ->where('tanggal <=', $endDate)
             ->get()->getRowArray();
-            
-        $avgAttendance = ($attendanceStats['total'] > 0) 
-            ? round(($attendanceStats['hadir'] / $attendanceStats['total']) * 100, 1) 
+
+        $avgAttendance = ($attendanceStats['total'] > 0)
+            ? round(($attendanceStats['hadir'] / $attendanceStats['total']) * 100, 1)
             : 0;
 
         // Active Classes (Classes with at least one jurnal or absensi in range)
@@ -91,14 +91,14 @@ class Monitoring extends BaseController
             ->where('DATE(created_at) <=', $endDate)
             ->groupBy('rombel_id')
             ->get()->getResultArray();
-            
+
         $activeClassesAbsensi = $this->db->table('absensi')
             ->select('rombel_id')
             ->where('tanggal >=', $startDate)
             ->where('tanggal <=', $endDate)
             ->groupBy('rombel_id')
             ->get()->getResultArray();
-            
+
         $activeClassIds = array_unique(array_merge(
             array_column($activeClassesJurnal, 'rombel_id'),
             array_column($activeClassesAbsensi, 'rombel_id')
@@ -113,18 +113,18 @@ class Monitoring extends BaseController
                 ->where('materi !=', 'Absensi Kelas')
                 ->where('DATE(created_at)', $currentDate)
                 ->countAllResults();
-                
+
             $absensiCount = $this->db->table('absensi')
                 ->select('COUNT(DISTINCT CONCAT(rombel_id, "-", tanggal)) as count') // Count unique class attendance submissions
                 ->where('tanggal', $currentDate)
                 ->get()->getRow()->count;
-                
+
             $dailyActivity[] = [
                 'date' => $currentDate,
                 'jurnal' => $jurnalCount,
                 'absensi' => $absensiCount
             ];
-            
+
             $currentDate = date('Y-m-d', strtotime($currentDate . ' +1 day'));
         }
 
@@ -148,9 +148,9 @@ class Monitoring extends BaseController
             $row['avg_persentase'] = ($row['total_entries'] > 0) ? ($row['total_hadir'] / $row['total_entries']) * 100 : 0;
             $rekapKehadiran[] = $row;
         }
-        
+
         // Sort by percentage DESC
-        usort($rekapKehadiran, function($a, $b) {
+        usort($rekapKehadiran, function ($a, $b) {
             return $b['avg_persentase'] <=> $a['avg_persentase'];
         });
 
@@ -203,7 +203,7 @@ class Monitoring extends BaseController
 
         // 7. Table Data: Monitoring Guru Aktif
         $guruAktif = $this->db->table('users u')
-            ->select('u.nama, u.mata_pelajaran, COUNT(DISTINCT j.id) as total_jurnal, COUNT(DISTINCT a.id) as total_absensi')
+            ->select('u.nama, u.mata_pelajaran, COUNT(DISTINCT j.id) as total_jurnal, COUNT(DISTINCT a.id) as total_absensi, COUNT(DISTINCT a.tanggal) as total_hari_absen')
             ->join('jurnal_new j', "u.id = j.user_id AND j.materi != 'Absensi Kelas' AND DATE(j.created_at) >= '$startDate' AND DATE(j.created_at) <= '$endDate'", 'left')
             ->join('absensi a', "u.id = a.guru_id AND a.tanggal >= '$startDate' AND a.tanggal <= '$endDate'", 'left')
             ->where('u.role', 'guru')
@@ -234,10 +234,10 @@ class Monitoring extends BaseController
             'rekap_jurnal_harian' => $rekapJurnalHarian,
             'guru_aktif' => $guruAktif
         ];
-        
+
         return view('admin/monitoring/index', $data);
     }
-    
+
     public function exportToPdf()
     {
         // Cek jika user sudah login dan memiliki role admin/super_admin
@@ -245,23 +245,23 @@ class Monitoring extends BaseController
         if (!session()->get('logged_in') || ($role !== 'admin' && $role !== 'super_admin')) {
             return redirect()->to('/auth/login');
         }
-        
+
         // Fetch actual data from database with filters
         $builder = $this->db->table('jurnal_new j');
         $builder->select('j.id, u.nama as guru_nama, j.tanggal, r.nama_rombel as kelas_nama, r.kode_rombel as kode_kelas, m.nama_mapel as mapel_nama, j.jam_ke, j.materi, j.jumlah_jam, j.jumlah_peserta, j.status');
         $builder->join('users u', 'j.user_id = u.id');
         $builder->join('rombel r', 'j.rombel_id = r.id');
         $builder->join('mata_pelajaran m', 'j.mapel_id = m.id');
-        
+
         // Apply filters if any
         if ($this->request->getGet('guru_id')) {
             $builder->where('j.user_id', $this->request->getGet('guru_id'));
         }
-        
+
         if ($this->request->getGet('tanggal')) {
             $builder->where('j.tanggal', $this->request->getGet('tanggal'));
         }
-        
+
         if ($this->request->getGet('kelas_id')) {
             $builder->where('j.rombel_id', $this->request->getGet('kelas_id'));
         }
@@ -269,33 +269,33 @@ class Monitoring extends BaseController
         // Exclude Absensi Kelas
         $builder->where('j.materi !=', 'Absensi Kelas');
         $builder->where('j.mapel_id !=', 18);
-        
+
         $builder->orderBy('j.tanggal', 'DESC');
         $jurnals = $builder->get()->getResultArray();
-        
+
         // Get settings for PDF header
         $settings = $this->settingModel->getSettings();
-        
+
         $data = [
             'jurnals' => $jurnals,
             'settings' => $settings
         ];
-        
+
         // Load the view and convert to PDF
         $html = view('admin/monitoring/pdf_list', $data);
-        
+
         $dompdf = new Dompdf();
         $dompdf->loadHtml($html);
         $dompdf->setPaper('A4', 'landscape');
         $dompdf->render();
-        
+
         // Output the generated PDF to Browser
         $dompdf->stream('daftar-jurnal-mengajar-' . date('Y-m-d') . '.pdf', ['Attachment' => false]);
-        
+
         // Hentikan eksekusi untuk mencegah output tambahan
         exit();
     }
-    
+
     public function exportToExcel()
     {
         // Cek jika user sudah login dan memiliki role admin/super_admin
@@ -303,23 +303,23 @@ class Monitoring extends BaseController
         if (!session()->get('logged_in') || ($role !== 'admin' && $role !== 'super_admin')) {
             return redirect()->to('/auth/login');
         }
-        
+
         // Fetch actual data from database with filters
         $builder = $this->db->table('jurnal_new j');
         $builder->select('j.id, u.nama as guru_nama, j.tanggal, r.nama_rombel as kelas_nama, m.nama_mapel as mapel_nama, j.jam_ke, j.materi, j.jumlah_jam, j.jumlah_peserta, j.status');
         $builder->join('users u', 'j.user_id = u.id');
         $builder->join('rombel r', 'j.rombel_id = r.id');
         $builder->join('mata_pelajaran m', 'j.mapel_id = m.id');
-        
+
         // Apply filters if any
         if ($this->request->getGet('guru_id')) {
             $builder->where('j.user_id', $this->request->getGet('guru_id'));
         }
-        
+
         if ($this->request->getGet('tanggal')) {
             $builder->where('j.tanggal', $this->request->getGet('tanggal'));
         }
-        
+
         if ($this->request->getGet('kelas_id')) {
             $builder->where('j.rombel_id', $this->request->getGet('kelas_id'));
         }
@@ -327,21 +327,21 @@ class Monitoring extends BaseController
         // Exclude Absensi Kelas
         $builder->where('j.materi !=', 'Absensi Kelas');
         $builder->where('j.mapel_id !=', 18);
-        
+
         $builder->orderBy('j.tanggal', 'DESC');
         $jurnals = $builder->get()->getResultArray();
-        
+
         // Create new Spreadsheet object
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
-        
+
         // Set document properties
         $spreadsheet->getProperties()->setCreator('Sistem Jurnal')
             ->setLastModifiedBy('Sistem Jurnal')
             ->setTitle('Data Jurnal Mengajar')
             ->setSubject('Data Jurnal Mengajar')
             ->setDescription('Export Data Jurnal Mengajar');
-            
+
         // Add Header
         $sheet->setCellValue('A1', 'ID');
         $sheet->setCellValue('B1', 'Tanggal');
@@ -353,7 +353,7 @@ class Monitoring extends BaseController
         $sheet->setCellValue('H1', 'Jumlah JP');
         $sheet->setCellValue('I1', 'Jumlah Peserta');
         $sheet->setCellValue('J1', 'Status');
-        
+
         // Style Header
         $headerStyle = [
             'font' => ['bold' => true],
@@ -366,7 +366,7 @@ class Monitoring extends BaseController
             ],
         ];
         $sheet->getStyle('A1:J1')->applyFromArray($headerStyle);
-        
+
         // Add Data
         $row = 2;
         foreach ($jurnals as $journal) {
@@ -382,25 +382,25 @@ class Monitoring extends BaseController
             $sheet->setCellValue('J' . $row, ucfirst($journal['status']));
             $row++;
         }
-        
+
         // Auto size columns
         foreach (range('A', 'J') as $columnID) {
             $sheet->getColumnDimension($columnID)->setAutoSize(true);
         }
-        
+
         // Set filename
         $filename = 'monitoring-jurnal-' . date('Y-m-d-His') . '.xlsx';
-        
+
         // Redirect output to a client’s web browser (Xlsx)
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment;filename="' . $filename . '"');
         header('Cache-Control: max-age=0');
-        
+
         $writer = new Xlsx($spreadsheet);
         $writer->save('php://output');
         exit;
     }
-    
+
     public function exportDetailToPdf($id)
     {
         // Cek jika user sudah login dan memiliki role admin/super_admin
@@ -408,7 +408,7 @@ class Monitoring extends BaseController
         if (!session()->get('logged_in') || ($role !== 'admin' && $role !== 'super_admin')) {
             return redirect()->to('/auth/login');
         }
-        
+
         // Fetch journal detail from database with all necessary fields for the PDF
         $builder = $this->db->table('jurnal_new j');
         $builder->select('
@@ -423,32 +423,32 @@ class Monitoring extends BaseController
         $builder->join('rombel r', 'j.rombel_id = r.id');
         $builder->join('mata_pelajaran m', 'j.mapel_id = m.id');
         $builder->where('j.id', $id);
-        
+
         $jurnal = $builder->get()->getRowArray();
-        
+
         if (!$jurnal) {
             throw new \CodeIgniter\Exceptions\PageNotFoundException("Journal with ID $id not found");
         }
-        
+
         $data = [
             'jurnal' => $jurnal
         ];
-        
+
         // Load the view and convert to PDF
         $html = view('admin/monitoring/pdf', $data);
-        
+
         $dompdf = new Dompdf();
         $dompdf->loadHtml($html);
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
-        
+
         // Output the generated PDF to Browser
         $dompdf->stream('jurnal-detail-' . $id . '.pdf', ['Attachment' => false]);
-        
+
         // Hentikan eksekusi untuk mencegah output tambahan
         exit();
     }
-    
+
     public function detail($id)
     {
         // Cek jika user sudah login dan memiliki role admin/super_admin
@@ -456,7 +456,7 @@ class Monitoring extends BaseController
         if (!session()->get('logged_in') || ($role !== 'admin' && $role !== 'super_admin')) {
             return redirect()->to('/auth/login');
         }
-        
+
         // Fetch journal detail from database
         $builder = $this->db->table('jurnal_new j');
         $builder->select('j.*, u.nama as nama_guru, r.nama_rombel as nama_kelas, r.kode_rombel as kode_kelas, m.nama_mapel as nama_mapel');
@@ -464,17 +464,17 @@ class Monitoring extends BaseController
         $builder->join('rombel r', 'j.rombel_id = r.id');
         $builder->join('mata_pelajaran m', 'j.mapel_id = m.id');
         $builder->where('j.id', $id);
-        
+
         $jurnal = $builder->get()->getRowArray();
-        
+
         if (!$jurnal) {
             throw new \CodeIgniter\Exceptions\PageNotFoundException("Journal with ID $id not found");
         }
-        
+
         $data = [
             'jurnal' => $jurnal
         ];
-        
+
         return view('admin/monitoring/detail', $data);
     }
 }

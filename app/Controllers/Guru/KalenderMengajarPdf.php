@@ -89,7 +89,13 @@ class KalenderMengajarPdf extends BaseController
         $dompdf->setPaper('A4', 'landscape');
         $dompdf->render();
 
+        // Bersihkan output buffer sebelum stream PDF untuk mencegah error headers sent
+        if (ob_get_length()) {
+            ob_end_clean();
+        }
+
         $dompdf->stream("Kalender_Mengajar_{$tahunAjaran}.pdf", ["Attachment" => false]);
+        exit();
     }
 
     private function getMonthData($guruId, $lembagaId, $tahunAjaran, $bulan, $tahun)

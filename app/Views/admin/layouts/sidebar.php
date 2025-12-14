@@ -52,8 +52,8 @@
                         </a>
                     </li>
 
-                    <li class="nav-item has-treeview <?= (isset($active_menu) && in_array($active_menu, ['kelas', 'rombel', 'siswa', 'absensi', 'ruangan', 'pindah_kelas', 'mapel'])) ? 'menu-open' : '' ?>">
-                        <a href="#" class="nav-link <?= (isset($active_menu) && in_array($active_menu, ['kelas', 'rombel', 'siswa', 'absensi', 'ruangan', 'pindah_kelas', 'mapel'])) ? 'active' : '' ?>">
+                    <li class="nav-item has-treeview <?= (isset($active_menu) && in_array($active_menu, ['kelas', 'rombel', 'ruangan', 'mapel'])) ? 'menu-open' : '' ?>">
+                        <a href="#" class="nav-link <?= (isset($active_menu) && in_array($active_menu, ['kelas', 'rombel', 'ruangan', 'mapel'])) ? 'active' : '' ?>">
                             <i class="nav-icon fas fa-school"></i>
                             <p>
                                 Manajemen Data
@@ -75,27 +75,9 @@
                                     <p>Manajemen Rombel</p>
                                 </a>
                             </li>
-                            <li class="nav-item">
-                                <a href="<?= base_url('admin/siswa') ?>"
-                                    class="nav-link <?= (isset($active_menu) && $active_menu == 'siswa') ? 'active' : '' ?>">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Data Siswa</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="<?= base_url('admin/absensi') ?>"
-                                    class="nav-link <?= (isset($active_menu) && $active_menu == 'absensi') ? 'active' : '' ?>">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Absensi</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="<?= base_url('admin/pindah-kelas') ?>"
-                                    class="nav-link <?= (isset($active_menu) && $active_menu == 'pindah_kelas') ? 'active' : '' ?>">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Pindah Kelas</p>
-                                </a>
-                            </li>
+
+
+
                             <li class="nav-item">
                                 <a href="<?= base_url('admin/mapel') ?>"
                                     class="nav-link <?= (isset($active_menu) && $active_menu == 'mapel') ? 'active' : '' ?>">
@@ -106,12 +88,63 @@
                         </ul>
                     </li>
 
-                    <li class="nav-item">
-                        <a href="<?= base_url('admin/monitoring') ?>"
-                            class="nav-link <?= (isset($active_menu) && $active_menu == 'monitoring') ? 'active' : '' ?>">
-                            <i class="nav-icon fas fa-search"></i>
-                            <p>Monitoring Jurnal</p>
+                    <li class="nav-item has-treeview <?= (isset($active_menu) && in_array($active_menu, ['siswa', 'pindah_kelas', 'kenaikan-kelas'])) ? 'menu-open' : '' ?>">
+                        <a href="#" class="nav-link <?= (isset($active_menu) && in_array($active_menu, ['siswa', 'pindah_kelas', 'kenaikan-kelas'])) ? 'active' : '' ?>">
+                            <i class="nav-icon fas fa-user-graduate"></i>
+                            <p>
+                                Manajemen Siswa
+                                <i class="right fas fa-angle-left"></i>
+                            </p>
                         </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a href="<?= base_url('admin/siswa') ?>"
+                                    class="nav-link <?= (isset($active_menu) && $active_menu == 'siswa') ? 'active' : '' ?>">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Data Siswa</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="<?= base_url('admin/pindah-kelas') ?>"
+                                    class="nav-link <?= (isset($active_menu) && $active_menu == 'pindah_kelas') ? 'active' : '' ?>">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Pindah Kelas</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="<?= base_url('admin/kenaikan-kelas') ?>"
+                                    class="nav-link <?= (isset($active_menu) && $active_menu == 'kenaikan-kelas') ? 'active' : '' ?>">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Kenaikan Kelas</p>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item has-treeview <?= (isset($active_menu) && in_array($active_menu, ['monitoring', 'absensi'])) ? 'menu-open' : '' ?>">
+                        <a href="#" class="nav-link <?= (isset($active_menu) && in_array($active_menu, ['monitoring', 'absensi'])) ? 'active' : '' ?>">
+                            <i class="nav-icon fas fa-clipboard-check"></i>
+                            <p>
+                                Monitoring & Absensi
+                                <i class="right fas fa-angle-left"></i>
+                            </p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a href="<?= base_url('admin/monitoring') ?>"
+                                    class="nav-link <?= (isset($active_menu) && $active_menu == 'monitoring') ? 'active' : '' ?>">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Monitoring Jurnal</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="<?= base_url('admin/absensi') ?>"
+                                    class="nav-link <?= (isset($active_menu) && $active_menu == 'absensi') ? 'active' : '' ?>">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Absensi</p>
+                                </a>
+                            </li>
+                        </ul>
                     </li>
 
                     <li class="nav-item">

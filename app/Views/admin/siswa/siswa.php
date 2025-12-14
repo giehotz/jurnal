@@ -32,7 +32,7 @@
                         </button>
                     </div>
                 <?php endif; ?>
-                
+
                 <!-- Filter Section -->
                 <div class="row mb-3">
                     <div class="col-md-3">
@@ -51,7 +51,8 @@
                                     <option value="7" <?= ($filter_tingkat == '7') ? 'selected' : '' ?>>7</option>
                                     <option value="8" <?= ($filter_tingkat == '8') ? 'selected' : '' ?>>8</option>
                                     <option value="9" <?= ($filter_tingkat == '9') ? 'selected' : '' ?>>9</option>
-                                <?php else: // SMA/MA ?>
+                                <?php else: // SMA/MA 
+                                ?>
                                     <option value="10" <?= ($filter_tingkat == '10') ? 'selected' : '' ?>>10</option>
                                     <option value="11" <?= ($filter_tingkat == '11') ? 'selected' : '' ?>>11</option>
                                     <option value="12" <?= ($filter_tingkat == '12') ? 'selected' : '' ?>>12</option>
@@ -88,13 +89,13 @@
                         <label for="search">Pencarian</label>
                         <form method="GET" class="form-inline" action="<?= base_url('admin/siswa') ?>">
                             <!-- Hidden inputs to persist filters -->
-                            <?php if($filter_tingkat): ?><input type="hidden" name="tingkat" value="<?= esc($filter_tingkat) ?>"><?php endif; ?>
-                            <?php if($filter_kelas): ?><input type="hidden" name="kelas" value="<?= esc($filter_kelas) ?>"><?php endif; ?>
-                            <?php if($per_page): ?><input type="hidden" name="per_page" value="<?= esc($per_page) ?>"><?php endif; ?>
-                            
+                            <?php if ($filter_tingkat): ?><input type="hidden" name="tingkat" value="<?= esc($filter_tingkat) ?>"><?php endif; ?>
+                            <?php if ($filter_kelas): ?><input type="hidden" name="kelas" value="<?= esc($filter_kelas) ?>"><?php endif; ?>
+                            <?php if ($per_page): ?><input type="hidden" name="per_page" value="<?= esc($per_page) ?>"><?php endif; ?>
+
                             <div class="input-group w-100">
-                                <input type="text" name="search" id="search" class="form-control" 
-                                       placeholder="Nama, NIS, NISN..." value="<?= esc($search ?? '') ?>">
+                                <input type="text" name="search" id="search" class="form-control"
+                                    placeholder="Nama, NIS, NISN..." value="<?= esc($search ?? '') ?>">
                                 <div class="input-group-append">
                                     <button class="btn btn-primary" type="submit">
                                         <i class="fas fa-search"></i>
@@ -104,14 +105,14 @@
                         </form>
                     </div>
                 </div>
-                
+
                 <?php if (isset($search) && !empty($search)): ?>
                     <div class="alert alert-info">
                         Hasil pencarian untuk: <strong><?= esc($search) ?></strong>
                         <a href="<?= base_url('admin/siswa') ?>" class="float-right">Tampilkan Semua</a>
                     </div>
                 <?php endif; ?>
-                
+
                 <table id="example1" class="table table-bordered table-striped">
                     <thead>
                         <tr>
@@ -122,8 +123,8 @@
                             <th>Nama</th>
                             <th>L/P</th>
                             <th>TTL</th>
-                            <th>Kelas</th>        <!-- Kolom 7 -->
-                            <th>Tingkat</th>      <!-- Kolom 8 -->
+                            <th>Kelas</th> <!-- Kolom 7 -->
+                            <th>Tingkat</th> <!-- Kolom 8 -->
                             <th>Password</th>
                             <th>Aksi</th>
                         </tr>
@@ -132,7 +133,7 @@
                         <?php if (!empty($students)): ?>
                             <?php $no = 1 + (($pager->getCurrentPage('siswa') - 1) * $per_page); ?>
                             <?php foreach ($students as $s): ?>
-                                <?php if($s['is_active'] == 1): ?>
+                                <?php if ($s['is_active'] == 1): ?>
                                     <tr>
                                         <td><?= $no++ ?></td>
                                         <td>
@@ -164,10 +165,10 @@
                                             <a href="<?= base_url('admin/siswa/edit/' . $s['id']) ?>" class="btn btn-warning btn-sm" title="Edit">
                                                 <i class="fas fa-edit"></i>
                                             </a>
-                                            <a href="<?= base_url('admin/siswa/delete/' . $s['id']) ?>" 
-                                               class="btn btn-danger btn-sm" 
-                                               title="Hapus"
-                                               onclick="return confirm('Apakah Anda yakin ingin menghapus siswa ini? Semua data terkait akan ikut terhapus.')">
+                                            <a href="<?= base_url('admin/siswa/delete/' . $s['id']) ?>"
+                                                class="btn btn-danger btn-sm"
+                                                title="Hapus"
+                                                onclick="return confirm('Apakah Anda yakin ingin menghapus siswa ini? Semua data terkait akan ikut terhapus.')">
                                                 <i class="fas fa-trash"></i>
                                             </a>
                                         </td>
@@ -187,7 +188,7 @@
                         <?php endif; ?>
                     </tbody>
                 </table>
-                
+
                 <!-- Pagination -->
                 <div class="row mt-3">
                     <div class="col-12">
@@ -199,80 +200,119 @@
     </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    
-    // 1. Inisialisasi DataTable (Hanya untuk styling dan export buttons, matikan fitur search/paging bawaan)
-    var table = $("#example1").DataTable({
-        "responsive": true,
-        "lengthChange": false,
-        "autoWidth": false,
-        "buttons": ["copy", "csv", "excel", "pdf", "print"],
-        "paging": false,
-        "searching": false,
-        "info": false,
-        "ordering": true // Masih boleh sorting kolom di halaman ini
-    });
+<?= $this->endSection() ?>
 
-    table.buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
-    
-    // 2. Filter Server-side
-    function applyFilter() {
-        var tingkat = document.getElementById('tingkat').value;
-        var kelas = document.getElementById('kelas').value;
-        var perPage = document.getElementById('show_entries').value;
-        var search = document.getElementById('search').value;
-        
-        var url = new URL(window.location.href);
-        
-        if (tingkat) url.searchParams.set('tingkat', tingkat);
-        else url.searchParams.delete('tingkat');
-        
-        if (kelas) url.searchParams.set('kelas', kelas);
-        else url.searchParams.delete('kelas');
-        
-        if (perPage) url.searchParams.set('per_page', perPage);
-        
-        if (search) url.searchParams.set('search', search);
-        else url.searchParams.delete('search');
-        
-        // Reset page ke 1 saat filter berubah
-        url.searchParams.delete('page_siswa');
-        
-        window.location.href = url.toString();
-    }
-    
-    // Event listeners
-    document.getElementById('tingkat').addEventListener('change', function() {
-        // Reset kelas jika tingkat berubah
-        document.getElementById('kelas').value = ''; 
-        applyFilter();
-    });
-    
-    document.getElementById('kelas').addEventListener('change', applyFilter);
-    document.getElementById('show_entries').addEventListener('change', applyFilter);
-    
-    // 3. Update dropdown kelas berdasarkan tingkat (Visual only)
-    var currentTingkat = "<?= $filter_tingkat ?>";
-    updateKelasDropdown(currentTingkat);
-    
-    function updateKelasDropdown(tingkat) {
-        var $kelas = $('#kelas');
-        
-        if (tingkat) {
-            $kelas.find('option').each(function() {
-                var optTingkat = $(this).data('tingkat');
-                // Tampilkan option kosong atau yang sesuai tingkat
-                if ($(this).val() === '' || optTingkat == tingkat) {
-                    $(this).show().prop('disabled', false);
-                } else {
-                    $(this).hide().prop('disabled', true);
-                }
+<?= $this->section('styles') ?>
+<!-- DataTables -->
+<link rel="stylesheet" href="<?= base_url('AdminLTE/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css') ?>">
+<link rel="stylesheet" href="<?= base_url('AdminLTE/plugins/datatables-responsive/css/responsive.bootstrap4.min.css') ?>">
+<link rel="stylesheet" href="<?= base_url('AdminLTE/plugins/datatables-buttons/css/buttons.bootstrap4.min.css') ?>">
+<?= $this->endSection() ?>
+
+<?= $this->section('scripts') ?>
+<!-- DataTables & Plugins -->
+<script src="<?= base_url('AdminLTE/plugins/datatables/jquery.dataTables.min.js') ?>"></script>
+<script src="<?= base_url('AdminLTE/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js') ?>"></script>
+<script src="<?= base_url('AdminLTE/plugins/datatables-responsive/js/dataTables.responsive.min.js') ?>"></script>
+<script src="<?= base_url('AdminLTE/plugins/datatables-responsive/js/responsive.bootstrap4.min.js') ?>"></script>
+<script src="<?= base_url('AdminLTE/plugins/datatables-buttons/js/dataTables.buttons.min.js') ?>"></script>
+<script src="<?= base_url('AdminLTE/plugins/datatables-buttons/js/buttons.bootstrap4.min.js') ?>"></script>
+<script src="<?= base_url('AdminLTE/plugins/jszip/jszip.min.js') ?>"></script>
+<script src="<?= base_url('AdminLTE/plugins/pdfmake/pdfmake.min.js') ?>"></script>
+<script src="<?= base_url('AdminLTE/plugins/pdfmake/vfs_fonts.js') ?>"></script>
+<script src="<?= base_url('AdminLTE/plugins/datatables-buttons/js/buttons.html5.min.js') ?>"></script>
+<script src="<?= base_url('AdminLTE/plugins/datatables-buttons/js/buttons.print.min.js') ?>"></script>
+<script src="<?= base_url('AdminLTE/plugins/datatables-buttons/js/buttons.colVis.min.js') ?>"></script>
+
+<script>
+    $(function() {
+        console.log("Siswa page loaded!");
+
+        // 1. Initialize DataTable (for styling and export only)
+        var table = null;
+        try {
+            table = $("#example1").DataTable({
+                "responsive": true,
+                "lengthChange": false,
+                "autoWidth": false,
+                "buttons": ["copy", "csv", "excel", "pdf", "print"],
+                "paging": false,
+                "searching": false,
+                "info": false,
+                "ordering": true
             });
-        } else {
-            $kelas.find('option').show().prop('disabled', false);
+
+            table.buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
+        } catch (e) {
+            console.error("DataTable error (IGNORED):", e.message);
         }
-    }
-});
+
+
+        // 2. Server-side Filter
+        function applyFilter() {
+            var tingkat = document.getElementById('tingkat').value;
+            var kelas = document.getElementById('kelas').value;
+            var perPage = document.getElementById('show_entries').value;
+            var search = document.getElementById('search').value;
+
+            console.log("Applying filter - Tingkat:", tingkat, "Kelas:", kelas);
+
+            var url = new URL(window.location.href);
+
+            if (tingkat) url.searchParams.set('tingkat', tingkat);
+            else url.searchParams.delete('tingkat');
+
+            if (kelas) url.searchParams.set('kelas', kelas);
+            else url.searchParams.delete('kelas');
+
+            if (perPage) url.searchParams.set('per_page', perPage);
+
+            if (search) url.searchParams.set('search', search);
+            else url.searchParams.delete('search');
+
+            // Reset page to 1 when filter changes
+            url.searchParams.delete('page_siswa');
+
+            window.location.href = url.toString();
+        }
+
+        // Event listeners
+        $('#tingkat').on('change', function() {
+            console.log("✓✓✓ TINGKAT CHANGED! New value:", $(this).val());
+            $('#kelas').val(''); // Reset class filter
+            applyFilter();
+        });
+
+        $('#kelas').on('change', function() {
+            console.log("Kelas changed:", $(this).val());
+            applyFilter();
+        });
+
+        $('#show_entries').on('change', function() {
+            console.log("Show entries changed:", $(this).val());
+            applyFilter();
+        });
+
+        // 3. Update kelas dropdown based on tingkat
+        var currentTingkat = "<?= $filter_tingkat ?>";
+        updateKelasDropdown(currentTingkat);
+
+        function updateKelasDropdown(tingkat) {
+            var $kelas = $('#kelas');
+
+            if (tingkat) {
+                $kelas.find('option').each(function() {
+                    var optTingkat = $(this).data('tingkat');
+                    if ($(this).val() === '' || optTingkat == tingkat) {
+                        $(this).show().prop('disabled', false);
+                    } else {
+                        $(this).hide().prop('disabled', true);
+                    }
+                });
+            } else {
+                $kelas.find('option').show().prop('disabled', false);
+            }
+        }
+    });
 </script>
 <?= $this->endSection() ?>

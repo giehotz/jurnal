@@ -35,7 +35,7 @@ class Rombel extends BaseController
 
         // Ambil data rombel untuk ditampilkan
         $rombels = $this->rombelModel->getRombel();
-        
+
         // Tambahkan informasi wali kelas
         foreach ($rombels as &$rombel) {
             if (!empty($rombel['wali_kelas'])) {
@@ -48,12 +48,23 @@ class Rombel extends BaseController
             } else {
                 $rombel['wali_kelas_nama'] = 'Belum ditentukan';
             }
+            // Hitung jumlah siswa
+            $rombel['jumlah_siswa'] = $this->rombelModel->countSiswaInRombel($rombel['id']);
         }
+
+        $db = \Config\Database::connect();
+        $setting = $db->table('settings')->get()->getRowArray();
+        $school_level = $setting['school_level'] ?? 'SMA/MA';
+        $school_year = $setting['school_year'] ?? date('Y') . '/' . (date('Y') + 1);
 
         $data = [
             'title' => 'Manajemen Rombel',
             'active' => 'rombel',
-            'rombels' => $rombels
+            'rombels' => $rombels,
+            'teachers' => $this->userModel->where('role', 'guru')->findAll(),
+            'rooms' => $this->ruanganModel->findAll(),
+            'school_level' => $school_level,
+            'school_year' => $school_year
         ];
 
         return view('admin/rombel/index', $data);
@@ -173,7 +184,7 @@ class Rombel extends BaseController
 
         // Hitung jumlah siswa dalam rombel
         $jumlahSiswa = $this->rombelModel->countSiswaInRombel($id);
-        
+
         // Ambil daftar siswa dalam rombel
         $siswaList = $this->siswaModel->getSiswaByRombel($id);
 
@@ -250,7 +261,7 @@ class Rombel extends BaseController
                 ->where('is_active', 1)
                 ->where('id !=', $id) // Exclude current rombel
                 ->first();
-                
+
             if ($existingRombel) {
                 session()->setFlashdata('error', 'Ruangan ini sudah digunakan oleh kelas ' . $existingRombel['nama_rombel']);
                 return redirect()->back()->withInput();
@@ -372,7 +383,7 @@ class Rombel extends BaseController
             if (!empty($studentIds) && is_array($studentIds)) {
                 $validStudents = $this->siswaModel->whereIn('id', $studentIds)->findAll();
                 $validStudentIds = array_column($validStudents, 'id');
-                
+
                 if (!empty($validStudentIds)) {
                     $this->siswaModel->whereIn('id', $validStudentIds)->set(['rombel_id' => $rombelId])->update();
                 }
@@ -404,7 +415,7 @@ class Rombel extends BaseController
 
         // Header Columns
         $headers = ['NIS', 'NISN', 'Nama Lengkap', 'Jenis Kelamin (L/P)', 'Tanggal Lahir (YYYY-MM-DD)'];
-        
+
         // Set Header
         $col = 'A';
         foreach ($headers as $header) {
@@ -511,7 +522,6 @@ class Rombel extends BaseController
             ];
 
             return view('admin/rombel/upload_preview', $data);
-
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Gagal membaca file: ' . $e->getMessage());
         }
@@ -547,7 +557,7 @@ class Rombel extends BaseController
         foreach ($students as $student) {
             // Cek duplikasi NIS
             $existingSiswa = $this->siswaModel->where('nis', $student['nis'])->first();
-            
+
             $dataSiswa = [
                 'nis' => $student['nis'],
                 'nisn' => $student['nisn'],

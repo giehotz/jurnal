@@ -37,7 +37,9 @@ $routes->setAutoRoute(false);
 
 // We get a performance increase by specifying the default
 // route since we don't have to scan directories.
-$routes->get('/', function() { return redirect()->to('auth/login'); });
+$routes->get('/', function () {
+    return redirect()->to('auth/login');
+});
 
 // Include Admin Routes
 if (file_exists(APPPATH . 'Config/Routes/AdminRoutes.php')) {
