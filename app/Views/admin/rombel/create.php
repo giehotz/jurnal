@@ -65,15 +65,19 @@
                                         <label for="tingkat">Tingkat Kelas <span class="text-danger">*</span></label>
                                         <select class="form-control" id="tingkat" name="tingkat" required>
                                             <option value="">Pilih Tingkat</option>
-                                            <?php 
-                                            $start = 1; $end = 12;
+                                            <?php
+                                            $start = 1;
+                                            $end = 12;
                                             if (isset($school_level)) {
                                                 if ($school_level == 'SD/MI') {
-                                                    $start = 1; $end = 6;
+                                                    $start = 1;
+                                                    $end = 6;
                                                 } elseif ($school_level == 'SMP/MTs') {
-                                                    $start = 7; $end = 9;
+                                                    $start = 7;
+                                                    $end = 9;
                                                 } elseif ($school_level == 'SMA/MA') {
-                                                    $start = 10; $end = 12;
+                                                    $start = 10;
+                                                    $end = 12;
                                                 }
                                             }
                                             for ($i = $start; $i <= $end; $i++) : ?>
@@ -141,7 +145,17 @@
                                             <option value="">Pilih Ruangan</option>
                                             <?php if (isset($rooms) && !empty($rooms)): ?>
                                                 <?php foreach ($rooms as $room): ?>
-                                                    <option value="<?= $room['id'] ?>"><?= $room['nama_ruangan'] ?> (Kapasitas: <?= $room['kapasitas'] ?>)</option>
+                                                    <?php
+                                                    $selected = '';
+                                                    $statusText = '';
+                                                    if (isset($selected_ruangan) && $selected_ruangan == $room['id']) {
+                                                        $selected = 'selected';
+                                                    }
+                                                    if (isset($occupied_rooms) && in_array($room['id'], $occupied_rooms)) {
+                                                        $statusText = ' (Sedang Terpakai)';
+                                                    }
+                                                    ?>
+                                                    <option value="<?= $room['id'] ?>" <?= $selected ?>><?= $room['nama_ruangan'] ?> (Kapasitas: <?= $room['kapasitas'] ?>)<?= $statusText ?></option>
                                                 <?php endforeach; ?>
                                             <?php endif; ?>
                                         </select>
@@ -170,7 +184,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Hidden fields for compatibility if needed -->
                             <input type="hidden" name="semester" value="1">
                             <input type="hidden" name="kapasitas" value="30">
@@ -192,18 +206,18 @@
 <link rel="stylesheet" href="<?= base_url('AdminLTE/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css') ?>">
 <script src="<?= base_url('AdminLTE/plugins/select2/js/select2.full.min.js') ?>"></script>
 <script>
-$(function () {
-    //Initialize Select2 Elements
-    $('.select2').select2({
-        theme: 'bootstrap4'
-    })
-    
-    // Auto-generate kode rombel
-    $('#nama_rombel').on('input', function() {
-        var nama = $(this).val();
-        var kode = nama.replace(/\s+/g, '-').toUpperCase();
-        $('#kode_rombel').val(kode);
+    $(function() {
+        //Initialize Select2 Elements
+        $('.select2').select2({
+            theme: 'bootstrap4'
+        })
+
+        // Auto-generate kode rombel
+        $('#nama_rombel').on('input', function() {
+            var nama = $(this).val();
+            var kode = nama.replace(/\s+/g, '-').toUpperCase();
+            $('#kode_rombel').val(kode);
+        });
     });
-});
 </script>
 <?= $this->endSection() ?>

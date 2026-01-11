@@ -10,8 +10,11 @@
                     <a href="<?= base_url('admin/siswa/create') ?>" class="btn btn-primary btn-sm">
                         <i class="fas fa-plus"></i> Tambah
                     </a>
-                    <a href="<?= base_url('admin/siswa/upload') ?>" class="btn btn-danger btn-sm ml-2">
+                    <a href="<?= base_url('admin/siswa/upload') ?>" class="btn btn-primary btn-sm ml-2">
                         <i class="fas fa-upload"></i> Upload Siswa
+                    </a>
+                    <a href="<?= base_url('admin/siswa/delete-all') ?>" class="btn btn-danger btn-sm ml-2" onclick="return confirm('PERINGATAN: Anda yakin ingin MENGHAPUS SEMUA DATA SISWA? Tindakan ini tidak dapat dibatalkan!')">
+                        <i class="fas fa-trash"></i> Hapus Semua
                     </a>
                 </div>
             </div>

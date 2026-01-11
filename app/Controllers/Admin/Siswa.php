@@ -30,9 +30,9 @@ class Siswa extends BaseController
         $filterTingkat = $this->request->getGet('tingkat');
         $filterKelas = $this->request->getGet('kelas');
         $perPage = $this->request->getGet('per_page') ?? 30;
-        
+
         if ($perPage == -1) {
-             $perPage = 100000; // Angka besar untuk menampilkan semua
+            $perPage = 100000; // Angka besar untuk menampilkan semua
         }
 
         // Ambil school_level dari settings untuk filter otomatis
@@ -49,34 +49,34 @@ class Siswa extends BaseController
         // Filter otomatis berdasarkan school_level
         if ($schoolLevel == 'SD/MI') {
             $builder->groupStart()
-                    ->whereIn('r.tingkat', ['1', '2', '3', '4', '5', '6'])
-                    ->orGroupStart()
-                    ->where('r.tingkat IS NULL')
-                    ->groupEnd()
-                    ->groupEnd();
+                ->whereIn('r.tingkat', ['1', '2', '3', '4', '5', '6'])
+                ->orGroupStart()
+                ->where('r.tingkat IS NULL')
+                ->groupEnd()
+                ->groupEnd();
         } elseif ($schoolLevel == 'SMP/MTs') {
             $builder->groupStart()
-                    ->whereIn('r.tingkat', ['7', '8', '9'])
-                    ->orGroupStart()
-                    ->where('r.tingkat IS NULL')
-                    ->groupEnd()
-                    ->groupEnd();
+                ->whereIn('r.tingkat', ['7', '8', '9'])
+                ->orGroupStart()
+                ->where('r.tingkat IS NULL')
+                ->groupEnd()
+                ->groupEnd();
         } else { // SMA/MA
             $builder->groupStart()
-                    ->whereIn('r.tingkat', ['10', '11', '12'])
-                    ->orGroupStart()
-                    ->where('r.tingkat IS NULL')
-                    ->groupEnd()
-                    ->groupEnd();
+                ->whereIn('r.tingkat', ['10', '11', '12'])
+                ->orGroupStart()
+                ->where('r.tingkat IS NULL')
+                ->groupEnd()
+                ->groupEnd();
         }
 
         // Filter Search
         if ($search) {
             $builder->groupStart()
-                    ->like('s.nama', $search)
-                    ->orLike('s.nis', $search)
-                    ->orLike('s.nisn', $search)
-                    ->groupEnd();
+                ->like('s.nama', $search)
+                ->orLike('s.nis', $search)
+                ->orLike('s.nisn', $search)
+                ->groupEnd();
         }
 
         // Filter Tingkat
@@ -90,22 +90,22 @@ class Siswa extends BaseController
         }
 
         $builder->orderBy('r.tingkat, r.nama_rombel, s.nama');
-        
+
         // Pagination
         $page = $this->request->getVar('page_siswa') ?? 1;
         $total = $builder->countAllResults(false); // false agar tidak mereset query
-        
+
         $builder->limit($perPage, ($page - 1) * $perPage);
         $students = $builder->get()->getResultArray();
-        
+
         // Buat pager manual
         $pager = \Config\Services::pager();
         $pager->store('siswa', $page, $perPage, $total, 0);
-        
+
         // Ambil data rombel untuk filter dropdown (filter berdasarkan school_level)
         $rombelBuilder = $this->rombelModel->builder();
         $rombelBuilder->where('is_active', 1);
-        
+
         // Filter rombel berdasarkan school_level
         if ($schoolLevel == 'SD/MI') {
             $rombelBuilder->whereIn('tingkat', ['1', '2', '3', '4', '5', '6']);
@@ -114,7 +114,7 @@ class Siswa extends BaseController
         } else { // SMA/MA
             $rombelBuilder->whereIn('tingkat', ['10', '11', '12']);
         }
-        
+
         $rombelBuilder->orderBy('tingkat, nama_rombel');
         $rombel = $rombelBuilder->get()->getResultArray();
 
@@ -150,7 +150,7 @@ class Siswa extends BaseController
         // Ambil data rombel untuk dropdown (filter berdasarkan school_level)
         $rombelBuilder = $this->rombelModel->builder();
         $rombelBuilder->where('is_active', 1);
-        
+
         // Filter rombel berdasarkan school_level
         if ($schoolLevel == 'SD/MI') {
             $rombelBuilder->whereIn('tingkat', ['1', '2', '3', '4', '5', '6']);
@@ -159,7 +159,7 @@ class Siswa extends BaseController
         } else { // SMA/MA
             $rombelBuilder->whereIn('tingkat', ['10', '11', '12']);
         }
-        
+
         $rombelBuilder->orderBy('tingkat, nama_rombel');
         $rombel = $rombelBuilder->get()->getResultArray();
 
@@ -186,7 +186,7 @@ class Siswa extends BaseController
         $builder->join('rombel_siswa rs', 's.id = rs.siswa_id');
         $builder->where('s.id', $id);
         $student = $builder->get()->getRowArray();
-        
+
         if (!$student) {
             throw new \CodeIgniter\Exceptions\PageNotFoundException('Siswa dengan ID ' . $id . ' tidak ditemukan.');
         }
@@ -199,7 +199,7 @@ class Siswa extends BaseController
         // Ambil data rombel untuk dropdown (filter berdasarkan school_level)
         $rombelBuilder = $this->rombelModel->builder();
         $rombelBuilder->where('is_active', 1);
-        
+
         // Filter rombel berdasarkan school_level
         if ($schoolLevel == 'SD/MI') {
             $rombelBuilder->whereIn('tingkat', ['1', '2', '3', '4', '5', '6']);
@@ -208,7 +208,7 @@ class Siswa extends BaseController
         } else { // SMA/MA
             $rombelBuilder->whereIn('tingkat', ['10', '11', '12']);
         }
-        
+
         $rombelBuilder->orderBy('tingkat, nama_rombel');
         $rombel = $rombelBuilder->get()->getResultArray();
 
@@ -268,7 +268,7 @@ class Siswa extends BaseController
             // Proses file excel
             try {
                 $filePath = ROOTPATH . 'writable/uploads/' . $newName;
-                
+
                 // Load library spreadsheet
                 $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($filePath);
                 $worksheet = $spreadsheet->getActiveSheet();
@@ -277,13 +277,13 @@ class Siswa extends BaseController
                 // Lewati baris header (baris pertama)
                 $dataToInsert = [];
                 $invalidRows = [];
-                
+
                 // Ambil semua rombel_id yang valid
                 $validRombelIds = array_column($this->rombelModel->findAll(), 'id');
-                
+
                 for ($i = 1; $i < count($rows); $i++) {
                     $row = $rows[$i];
-                    
+
                     // Pastikan baris tidak kosong
                     if (!empty(array_filter($row))) {
                         // Validasi format tanggal
@@ -296,21 +296,21 @@ class Siswa extends BaseController
                                 $tanggal_lahir = null;
                             }
                         }
-                        
+
                         // Validasi rombel_id
                         $rombel_id = $row[6] ?? null;
                         if ($rombel_id !== null && !in_array($rombel_id, $validRombelIds)) {
                             $invalidRows[] = $i + 1; // Simpan nomor baris yang invalid
                             continue;
                         }
-                        
+
                         // Validasi jenis kelamin
                         $jenis_kelamin = $row[3] ?? '';
                         if (!in_array($jenis_kelamin, ['L', 'P'])) {
                             $invalidRows[] = $i + 1; // Simpan nomor baris yang invalid
                             continue;
                         }
-                        
+
                         // Tambahkan data yang valid
                         $dataToInsert[] = [
                             'nis' => $row[0] ?? '',
@@ -331,10 +331,10 @@ class Siswa extends BaseController
                 if (!empty($dataToInsert)) {
                     // Insert data siswa
                     $this->siswaModel->insertBatch($dataToInsert);
-                    
+
                     // Dapatkan ID siswa yang baru saja diinsert
                     $siswaIds = $this->siswaModel->db->insertID();
-                    
+
                     // Siapkan data untuk tabel rombel_siswa
                     $rombelSiswaData = [];
                     foreach ($dataToInsert as $index => $siswa) {
@@ -345,7 +345,7 @@ class Siswa extends BaseController
                             ->where('nisn', $siswa['nisn'])
                             ->where('nama', $siswa['nama'])
                             ->first();
-                            
+
                         if ($siswaRecord && $siswa['rombel_id']) {
                             $rombelSiswaData[] = [
                                 'siswa_id' => $siswaRecord['id'],
@@ -355,32 +355,32 @@ class Siswa extends BaseController
                             ];
                         }
                     }
-                    
+
                     // Insert data relasi rombel_siswa
                     if (!empty($rombelSiswaData)) {
                         $db = \Config\Database::connect();
                         $db->table('rombel_siswa')->insertBatch($rombelSiswaData);
                     }
-                    
+
                     unlink($filePath); // Hapus file setelah diproses
-                    
+
                     $message = count($dataToInsert) . ' data siswa berhasil diupload.';
-                    
+
                     if (!empty($invalidRows)) {
-                        $message .= ' Namun, beberapa baris tidak valid dan tidak diproses: ' . 
-                                    implode(', ', $invalidRows);
+                        $message .= ' Namun, beberapa baris tidak valid dan tidak diproses: ' .
+                            implode(', ', $invalidRows);
                     }
-                    
+
                     return redirect()->to('/admin/siswa')->with('success', $message);
                 } else {
                     unlink($filePath); // Hapus file jika tidak ada data
-                    
+
                     $message = 'Tidak ada data valid yang ditemukan di file.';
-                    
+
                     if (!empty($invalidRows)) {
                         $message .= ' Baris tidak valid: ' . implode(', ', $invalidRows);
                     }
-                    
+
                     return redirect()->back()->with('error', $message);
                 }
             } catch (\Exception $e) {
@@ -394,7 +394,7 @@ class Siswa extends BaseController
 
         return redirect()->back()->with('error', 'Gagal mengupload file.');
     }
-    
+
     public function downloadTemplate()
     {
         // Cek jika user sudah login dan memiliki role admin/super_admin
@@ -402,12 +402,12 @@ class Siswa extends BaseController
         if (!session()->get('logged_in') || ($role !== 'admin' && $role !== 'super_admin')) {
             return redirect()->to('/auth/login');
         }
-        
+
         try {
             // Buat spreadsheet baru
             $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
             $sheet = $spreadsheet->getActiveSheet();
-            
+
             // Set header
             $sheet->setCellValue('A1', 'NIS');
             $sheet->setCellValue('B1', 'NISN');
@@ -416,7 +416,7 @@ class Siswa extends BaseController
             $sheet->setCellValue('E1', 'Tempat Lahir');
             $sheet->setCellValue('F1', 'Tanggal Lahir (YYYY-MM-DD)');
             $sheet->setCellValue('G1', 'Rombel ID');
-            
+
             // Set contoh data
             $sheet->setCellValue('A2', '1234567890');
             $sheet->setCellValue('B2', '123456789012345');
@@ -425,23 +425,23 @@ class Siswa extends BaseController
             $sheet->setCellValue('E2', 'Bandar Lampung');
             $sheet->setCellValue('F2', '2005-01-01');
             $sheet->setCellValue('G2', '1');
-            
+
             // Set lebar kolom
             foreach (range('A', 'G') as $column) {
                 $sheet->getColumnDimension($column)->setAutoSize(true);
             }
-            
+
             // Buat file excel
             $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
-            
+
             // Set nama file
             $filename = 'template_upload_siswa.xlsx';
-            
+
             // Set header untuk download
             header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
             header('Content-Disposition: attachment;filename="' . $filename . '"');
             header('Cache-Control: max-age=0');
-            
+
             // Tulis file ke output
             $writer->save('php://output');
             exit;
@@ -487,7 +487,7 @@ class Siswa extends BaseController
         if ($this->siswaModel->save($data)) {
             // Dapatkan ID siswa yang baru disimpan
             $siswaId = $this->siswaModel->getInsertID();
-            
+
             // Simpan relasi di tabel rombel_siswa
             $rombelSiswaData = [
                 'siswa_id' => $siswaId,
@@ -495,10 +495,10 @@ class Siswa extends BaseController
                 'tahun_ajaran' => '2024/2025', // Sesuaikan dengan tahun ajaran aktif
                 'semester' => '1' // Sesuaikan dengan semester aktif
             ];
-            
+
             $db = \Config\Database::connect();
             $db->table('rombel_siswa')->insert($rombelSiswaData);
-            
+
             return redirect()->to('/admin/siswa')->with('success', 'Data siswa berhasil disimpan.');
         } else {
             return redirect()->back()->withInput()->with('error', 'Gagal menyimpan data siswa.');
@@ -551,12 +551,12 @@ class Siswa extends BaseController
                 'tahun_ajaran' => '2024/2025', // Sesuaikan dengan tahun ajaran aktif
                 'semester' => '1' // Sesuaikan dengan semester aktif
             ];
-            
+
             $db = \Config\Database::connect();
             $db->table('rombel_siswa')
-                     ->where('siswa_id', $id)
-                     ->update($rombelSiswaData);
-            
+                ->where('siswa_id', $id)
+                ->update($rombelSiswaData);
+
             return redirect()->to('/admin/siswa')->with('success', 'Data siswa berhasil diperbarui.');
         } else {
             return redirect()->back()->withInput()->with('error', 'Gagal memperbarui data siswa.');
@@ -582,6 +582,40 @@ class Siswa extends BaseController
             return redirect()->to('/admin/siswa')->with('success', 'Data siswa berhasil dihapus.');
         } else {
             return redirect()->to('/admin/siswa')->with('error', 'Gagal menghapus data siswa.');
+        }
+    }
+    public function deleteAll()
+    {
+        // Cek jika user sudah login dan memiliki role admin/super_admin
+        $role = session()->get('role');
+        if (!session()->get('logged_in') || ($role !== 'admin' && $role !== 'super_admin')) {
+            return redirect()->to('/auth/login');
+        }
+
+        $db = \Config\Database::connect();
+        $db->transStart();
+
+        try {
+            // 1. Hapus semua data di tabel relasi rombel_siswa
+            $db->table('rombel_siswa')->emptyTable();
+
+            // 2. Hapus semua data di tabel siswa
+            // Gunakan emptyTable untuk mereset auto increment dan menghapus semua data
+            // Hati-hati: ini akan gagal jika ada tabel lain yang mereferensi (foreign key) ke siswa selain rombel_siswa
+            // Jika ada (misal absensi, nilai), harus dihapus dulu atau set null.
+            // Untuk saat ini asumsi hanya rombel_siswa yang kritis.
+            $this->siswaModel->emptyTable();
+
+            $db->transComplete();
+
+            if ($db->transStatus() === false) {
+                return redirect()->to('/admin/siswa')->with('error', 'Gagal menghapus semua data siswa. Transaksi dibatalkan.');
+            }
+
+            return redirect()->to('/admin/siswa')->with('success', 'Semua data siswa berhasil dihapus.');
+        } catch (\Exception $e) {
+            $db->transRollback();
+            return redirect()->to('/admin/siswa')->with('error', 'Gagal menghapus data: ' . $e->getMessage());
         }
     }
 }

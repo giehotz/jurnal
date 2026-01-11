@@ -16,10 +16,38 @@ class Ruangan extends BaseController
 
     public function index()
     {
+        // Get all rooms
+        $ruangan = $this->ruanganModel->findAll();
+
+        // Get active rombels
+        $rombelModel = new \App\Models\RombelModel();
+        $activeRombels = $rombelModel->where('is_active', 1)->findAll();
+
+        // Map rombels to rooms
+        $ruanganMap = [];
+        foreach ($activeRombels as $r) {
+            if (!empty($r['ruangan_id'])) {
+                $ruanganMap[$r['ruangan_id']] = $r;
+            }
+        }
+
+        // Merge data
+        foreach ($ruangan as &$r) {
+            if (isset($ruanganMap[$r['id']])) {
+                $r['status'] = 'Terpakai';
+                $r['rombel_nama'] = $ruanganMap[$r['id']]['nama_rombel'];
+                $r['rombel_id'] = $ruanganMap[$r['id']]['id'];
+            } else {
+                $r['status'] = 'Kosong';
+                $r['rombel_nama'] = '-';
+                $r['rombel_id'] = null;
+            }
+        }
+
         $data = [
             'title' => 'Manajemen Ruangan',
             'active' => 'ruangan',
-            'ruangan' => $this->ruanganModel->findAll()
+            'ruangan' => $ruangan
         ];
 
         return view('admin/ruangan/index', $data);
@@ -54,7 +82,7 @@ class Ruangan extends BaseController
             return redirect()->back()->withInput()->with('error', 'Gagal menyimpan data ruangan.');
         }
 
-        return redirect()->to('/admin/ruangan')->with('success', 'Ruangan berhasil ditambahkan.');
+        return redirect()->to('/admin/rombel')->with('success', 'Ruangan berhasil ditambahkan.');
     }
 
     public function edit($id)
@@ -62,12 +90,12 @@ class Ruangan extends BaseController
         $ruangan = $this->ruanganModel->find($id);
 
         if (!$ruangan) {
-            return redirect()->to('/admin/ruangan')->with('error', 'Ruangan tidak ditemukan.');
+            return redirect()->to('/admin/rombel')->with('error', 'Ruangan tidak ditemukan.');
         }
 
         $data = [
             'title' => 'Edit Ruangan',
-            'active' => 'ruangan',
+            'active' => 'rombel', // Changed active to rombel
             'ruangan' => $ruangan
         ];
 
@@ -91,7 +119,7 @@ class Ruangan extends BaseController
             'keterangan' => $this->request->getPost('keterangan'),
         ]);
 
-        return redirect()->to('/admin/ruangan')->with('success', 'Ruangan berhasil diperbarui.');
+        return redirect()->to('/admin/rombel')->with('success', 'Ruangan berhasil diperbarui.');
     }
 
     public function delete($id)
@@ -99,7 +127,7 @@ class Ruangan extends BaseController
         // Check if ruangan exists
         $ruangan = $this->ruanganModel->find($id);
         if (!$ruangan) {
-            return redirect()->to('/admin/ruangan')->with('error', 'Ruangan tidak ditemukan.');
+            return redirect()->to('/admin/rombel')->with('error', 'Ruangan tidak ditemukan.');
         }
 
         // Update related rombel records to set ruangan_id to null
@@ -108,6 +136,6 @@ class Ruangan extends BaseController
 
         // Delete the ruangan
         $this->ruanganModel->delete($id);
-        return redirect()->to('/admin/ruangan')->with('success', 'Ruangan berhasil dihapus.');
+        return redirect()->to('/admin/rombel')->with('success', 'Ruangan berhasil dihapus.');
     }
 }

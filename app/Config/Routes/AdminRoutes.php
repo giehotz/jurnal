@@ -69,6 +69,8 @@ function adminRoutes(RouteCollection $routes)
         $routes->get('rombel/download-template', 'Admin\Rombel::downloadTemplate');
         $routes->post('rombel/preview-upload/(:num)', 'Admin\Rombel::previewUpload/$1');
         $routes->post('rombel/store-upload/(:num)', 'Admin\Rombel::storeUpload/$1');
+        $routes->get('rombel/download-student-template', 'Admin\Rombel::downloadStudentTemplate');
+        $routes->post('rombel/upload-students/(:num)', 'Admin\Rombel::uploadStudents/$1');
 
         // Ruangan Management
         $routes->get('ruangan', 'Admin\Ruangan::index');
@@ -185,6 +187,7 @@ function adminRoutes(RouteCollection $routes)
         $routes->get('siswa/delete/(:num)', 'Admin\Siswa::delete/$1');
         $routes->get('siswa/upload', 'Admin\Siswa::upload');
         $routes->post('siswa/import', 'Admin\Siswa::processUpload');
+        $routes->get('siswa/delete-all', 'Admin\Siswa::deleteAll');
         $routes->get('siswa/download-template', 'Admin\Siswa::downloadTemplate');
 
         // Laporan

@@ -9,6 +9,7 @@ use App\Models\SiswaModel;
 use App\Models\RuanganModel;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class Rombel extends BaseController
 {
@@ -52,17 +53,40 @@ class Rombel extends BaseController
             $rombel['jumlah_siswa'] = $this->rombelModel->countSiswaInRombel($rombel['id']);
         }
 
+        // --- MERGED: Fetch Ruangan Data ---
+        $ruangan = $this->ruanganModel->findAll();
+        $activeRombels = $this->rombelModel->where('is_active', 1)->findAll();
+        $ruanganMap = [];
+        foreach ($activeRombels as $r) {
+            if (!empty($r['ruangan_id'])) {
+                $ruanganMap[$r['ruangan_id']] = $r;
+            }
+        }
+        foreach ($ruangan as &$r) {
+            if (isset($ruanganMap[$r['id']])) {
+                $r['status'] = 'Terpakai';
+                $r['rombel_nama'] = $ruanganMap[$r['id']]['nama_rombel'];
+                $r['rombel_id'] = $ruanganMap[$r['id']]['id'];
+            } else {
+                $r['status'] = 'Kosong';
+                $r['rombel_nama'] = '-';
+                $r['rombel_id'] = null;
+            }
+        }
+        // ----------------------------------
+
         $db = \Config\Database::connect();
         $setting = $db->table('settings')->get()->getRowArray();
         $school_level = $setting['school_level'] ?? 'SMA/MA';
         $school_year = $setting['school_year'] ?? date('Y') . '/' . (date('Y') + 1);
 
         $data = [
-            'title' => 'Manajemen Rombel',
+            'title' => 'Manajemen Kelas & Ruangan',
             'active' => 'rombel',
             'rombels' => $rombels,
+            'ruangan' => $ruangan, // Pass loaded ruangan data
             'teachers' => $this->userModel->where('role', 'guru')->findAll(),
-            'rooms' => $this->ruanganModel->findAll(),
+            'rooms' => $this->ruanganModel->findAll(), // This corresponds to 'rooms' used in modals, keeping it for compatibility
             'school_level' => $school_level,
             'school_year' => $school_year
         ];
@@ -93,6 +117,13 @@ class Rombel extends BaseController
         $data['school_level'] = $setting['school_level'] ?? 'SMA/MA';
         $data['school_year'] = $setting['school_year'] ?? date('Y') . '/' . (date('Y') + 1);
 
+        // Get occupied rooms
+        $activeRombels = $this->rombelModel->select('ruangan_id')->where('is_active', 1)->findAll();
+        $data['occupied_rooms'] = array_column($activeRombels, 'ruangan_id');
+
+        // Pre-select Ruangan if passed in URL
+        $data['selected_ruangan'] = $this->request->getGet('ruangan_id');
+
         return view('admin/rombel/create', $data);
     }
 
@@ -106,7 +137,13 @@ class Rombel extends BaseController
 
         // Validasi input
         $validationRules = [
-            'kode_rombel' => 'required|is_unique[rombel.kode_rombel]',
+            'kode_rombel' => [
+                'rules' => 'required|is_unique[rombel.kode_rombel]',
+                'errors' => [
+                    'required' => 'Kode Rombel wajib diisi.',
+                    'is_unique' => 'Kode Rombel sudah terdaftar, silakan gunakan kode lain.'
+                ]
+            ],
             'nama_rombel' => 'required',
             'tingkat' => 'required|integer|greater_than[0]|less_than_equal_to[12]',
             'tahun_ajaran' => 'required'
@@ -140,15 +177,24 @@ class Rombel extends BaseController
             'jenis_rombel' => $this->request->getPost('jenis_rombel'),
             'waktu_mengajar' => $this->request->getPost('waktu_mengajar'),
             'tahun_ajaran' => $this->request->getPost('tahun_ajaran'),
-            'semester' => $this->request->getPost('semester'),
+            'semester' => $this->request->getPost('semester') ?: 1,
             'kapasitas' => $this->request->getPost('kapasitas') ?: 30,
             'is_active' => 1
         ];
 
-        if ($this->rombelModel->save($data)) {
-            session()->setFlashdata('success', 'Rombel berhasil ditambahkan.');
-        } else {
-            session()->setFlashdata('error', 'Gagal menambahkan rombel.');
+        try {
+            if ($this->rombelModel->save($data)) {
+                session()->setFlashdata('success', 'Rombel berhasil ditambahkan.');
+            } else {
+                session()->setFlashdata('error', 'Gagal menambahkan rombel.');
+            }
+        } catch (\Exception $e) {
+            if ($e->getCode() == 1062) { // Duplicate entry
+                session()->setFlashdata('error', 'Gagal: Kode Rombel sudah ada. Silakan gunakan kode lain.');
+            } else {
+                session()->setFlashdata('error', 'Gagal menambahkan rombel: ' . $e->getMessage());
+            }
+            return redirect()->back()->withInput();
         }
 
         return redirect()->to('/admin/rombel');
@@ -243,7 +289,13 @@ class Rombel extends BaseController
 
         // Validasi input
         $validationRules = [
-            'kode_rombel' => 'required|is_unique[rombel.kode_rombel,id,' . $id . ']',
+            'kode_rombel' => [
+                'rules' => 'required|is_unique[rombel.kode_rombel,id,' . $id . ']',
+                'errors' => [
+                    'required' => 'Kode Rombel wajib diisi.',
+                    'is_unique' => 'Kode Rombel sudah terdaftar, silakan gunakan kode lain.'
+                ]
+            ],
             'nama_rombel' => 'required',
             'tingkat' => 'required|in_list[1,2,3,4,5,6,7,8,9,10,11,12]',
         ];
@@ -310,10 +362,14 @@ class Rombel extends BaseController
         }
 
         // Hapus data rombel
-        if ($this->rombelModel->delete($id)) {
-            session()->setFlashdata('success', 'Rombel berhasil dihapus.');
-        } else {
-            session()->setFlashdata('error', 'Gagal menghapus rombel.');
+        try {
+            if ($this->rombelModel->delete($id)) {
+                session()->setFlashdata('success', 'Rombel berhasil dihapus.');
+            } else {
+                session()->setFlashdata('error', 'Gagal menghapus rombel.');
+            }
+        } catch (\Exception $e) {
+            session()->setFlashdata('error', 'Gagal menghapus rombel: ' . $e->getMessage());
         }
 
         return redirect()->to('/admin/rombel');
@@ -596,5 +652,106 @@ class Rombel extends BaseController
         }
 
         return redirect()->to('/admin/rombel/view/' . $rombelId)->with('success', $message);
+    }
+    public function downloadStudentTemplate()
+    {
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Header
+        $sheet->setCellValue('A1', 'NIS');
+        $sheet->setCellValue('B1', 'Nama Lengkap');
+        $sheet->setCellValue('C1', 'L/P (Laki-laki/Perempuan)');
+        $sheet->setCellValue('D1', 'Tempat Lahir');
+        $sheet->setCellValue('E1', 'Tanggal Lahir (YYYY-MM-DD)');
+
+        // Contoh Data
+        $sheet->setCellValue('A2', '12345');
+        $sheet->setCellValue('B2', 'Siswa Contoh');
+        $sheet->setCellValue('C2', 'L');
+        $sheet->setCellValue('D2', 'Jakarta');
+        $sheet->setCellValue('E2', '2005-01-01');
+
+        // Style Header
+        $sheet->getStyle('A1:E1')->getFont()->setBold(true);
+        foreach (range('A', 'E') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        $writer = new Xlsx($spreadsheet);
+        $filename = 'template_siswa_rombel.xlsx';
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
+
+        $writer->save('php://output');
+        exit;
+    }
+
+    public function uploadStudents($rombelId)
+    {
+        $file = $this->request->getFile('file_excel');
+
+        if ($file && $file->isValid() && !$file->hasMoved()) {
+            try {
+                $spreadsheet = IOFactory::load($file->getTempName());
+                $sheet = $spreadsheet->getActiveSheet();
+                $rows = $sheet->toArray();
+
+                $countUpdated = 0;
+                $countCreated = 0;
+
+                // Mulai dari baris ke-2 (Baris 1 adalah Header)
+                for ($i = 1; $i < count($rows); $i++) {
+                    $row = $rows[$i];
+
+                    // Skip jika NIS kosong
+                    if (empty($row[0])) continue;
+
+                    $nis = trim($row[0]);
+                    $nama = trim($row[1]);
+                    $jk = strtoupper(trim($row[2]));
+                    $tempatLahir = trim($row[3]);
+                    $tglLahir = trim($row[4]);
+
+                    // Normalisasi JK
+                    $jk = ($jk == 'L' || $jk == 'LAKI-LAKI') ? 'L' : 'P';
+
+                    // Cek Siswa by NIS
+                    $existingSiswa = $this->siswaModel->where('nis', $nis)->first();
+
+                    if ($existingSiswa) {
+                        // Update Rombel ID
+                        $this->siswaModel->update($existingSiswa['id'], [
+                            'rombel_id' => $rombelId,
+                            // Opsional: update data lain jika kosong atau mau ditimpa
+                            'nama' => $nama ?: $existingSiswa['nama']
+                        ]);
+                        $countUpdated++;
+                    } else {
+                        // Create New Siswa
+                        $this->siswaModel->save([
+                            'nis' => $nis,
+                            'nama' => $nama,
+                            'jenis_kelamin' => $jk,
+                            'tempat_lahir' => $tempatLahir,
+                            'tanggal_lahir' => $tglLahir,
+                            'rombel_id' => $rombelId,
+                            'is_active' => 1
+                        ]);
+                        $countCreated++;
+                    }
+                }
+
+                session()->setFlashdata('success', "Import berhasil! Data Baru: $countCreated, Diupdate ke Rombel ini: $countUpdated");
+            } catch (\Exception $e) {
+                session()->setFlashdata('error', 'Gagal import file: ' . $e->getMessage());
+            }
+        } else {
+            session()->setFlashdata('error', 'File tidak valid atau belum diupload.');
+        }
+
+        return redirect()->to('/admin/rombel/assign-students/' . $rombelId);
     }
 }

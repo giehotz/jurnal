@@ -78,6 +78,8 @@
                             <th>Nama Ruangan</th>
                             <th>Kapasitas</th>
                             <th>Jenis</th>
+                            <th>Status</th>
+                            <th>Digunakan Oleh</th>
                             <th>Keterangan</th>
                             <th>Aksi</th>
                         </tr>
@@ -87,15 +89,34 @@
                         foreach ($ruangan as $r) : ?>
                             <tr>
                                 <td><?= $i++ ?></td>
-                                <td><?= $r['nama_ruangan'] ?></td>
-                                <td><?= $r['kapasitas'] ?></td>
-                                <td><?= $r['jenis'] ?></td>
-                                <td><?= $r['keterangan'] ?></td>
+                                <td><?= esc($r['nama_ruangan']) ?></td>
+                                <td><?= esc($r['kapasitas']) ?></td>
+                                <td><?= esc($r['jenis']) ?></td>
+                                <td class="text-center">
+                                    <?php if ($r['status'] == 'Kosong'): ?>
+                                        <span class="badge badge-success">Kosong</span>
+                                    <?php else: ?>
+                                        <span class="badge badge-primary">Terpakai</span>
+                                    <?php endif; ?>
+                                </td>
                                 <td>
-                                    <a href="<?= base_url('admin/ruangan/edit/' . $r['id']) ?>" class="btn btn-warning btn-sm">
+                                    <?php if ($r['status'] == 'Terpakai'): ?>
+                                        <a href="<?= base_url('admin/rombel/view/' . $r['rombel_id']) ?>"><i class="fas fa-chalkboard"></i> <?= esc($r['rombel_nama']) ?></a>
+                                    <?php else: ?>
+                                        <span class="text-muted">-</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td><?= esc($r['keterangan']) ?></td>
+                                <td>
+                                    <?php if ($r['status'] == 'Kosong'): ?>
+                                        <a href="<?= base_url('admin/rombel/create?ruangan_id=' . $r['id']) ?>" class="btn btn-info btn-sm" title="Buat Kelas di Ruangan ini">
+                                            <i class="fas fa-plus-circle"></i> Buat Kelas
+                                        </a>
+                                    <?php endif; ?>
+                                    <a href="<?= base_url('admin/ruangan/edit/' . $r['id']) ?>" class="btn btn-warning btn-sm" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <a href="<?= base_url('admin/ruangan/delete/' . $r['id']) ?>" class="btn btn-danger btn-sm" onclick="return confirm('Yakin ingin menghapus?')">
+                                    <a href="<?= base_url('admin/ruangan/delete/' . $r['id']) ?>" class="btn btn-danger btn-sm" onclick="return confirm('Yakin ingin menghapus?')" title="Hapus">
                                         <i class="fas fa-trash"></i>
                                     </a>
                                 </td>

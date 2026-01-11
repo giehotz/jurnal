@@ -373,7 +373,7 @@
                 <td style="width: 40%;"></td> <!-- Left Empty -->
                 <td style="width: 20%;"></td> <!-- Spacer -->
                 <td style="width: 40%; text-align: center;">
-                    <p style="margin: 0; padding-bottom: 5px;">Jember, <?= date('d F Y') ?></p>
+                    <p style="margin: 0; padding-bottom: 5px;">Gisting, <?= date('d F Y') ?></p>
                 </td>
             </tr>
             <!-- Row 2: Titles -->

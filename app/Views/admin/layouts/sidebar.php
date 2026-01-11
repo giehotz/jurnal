@@ -62,17 +62,10 @@
                         </a>
                         <ul class="nav nav-treeview">
                             <li class="nav-item">
-                                <a href="<?= base_url('admin/ruangan') ?>"
-                                    class="nav-link <?= (isset($active_menu) && $active_menu == 'ruangan') ? 'active' : '' ?>">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Ruangan</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
                                 <a href="<?= base_url('admin/rombel') ?>"
                                     class="nav-link <?= (isset($active_menu) && $active_menu == 'rombel') ? 'active' : '' ?>">
                                     <i class="far fa-circle nav-icon"></i>
-                                    <p>Manajemen Rombel</p>
+                                    <p>Manajemen Kelas & Ruangan</p>
                                 </a>
                             </li>
 
